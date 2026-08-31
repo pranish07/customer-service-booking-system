@@ -288,7 +288,8 @@ POST /api/v1/bookings
   "slotId": "slot_01H8X1A2B3C4D5E6F7G8H9J0K",
   "customerName": "Jane Doe",
   "customerEmail": "jane.doe@example.com",
-  "customerPhone": "+1-555-0100"
+  "customerPhone": "+1-555-0100",
+  "address": "123 Main St, Springfield"
 }
 ```
 
@@ -299,6 +300,7 @@ POST /api/v1/bookings
 | `customerName`  | `string` | Yes      | 1–100 characters, non-empty after trimming             |
 | `customerEmail` | `string` | Yes      | Valid email format                                     |
 | `customerPhone` | `string` | No       | 1–30 characters if provided                            |
+| `address`       | `string` | Yes      | 1–200 characters, non-empty after trimming             |
 
 #### Response — `201 Created`
 
@@ -353,7 +355,8 @@ Returned when request body fails schema validation:
     "message": "Request body failed validation.",
     "details": {
       "customerEmail": "Invalid email address",
-      "customerName": "Required"
+      "customerName": "Required",
+      "address": "Required"
     }
   }
 }

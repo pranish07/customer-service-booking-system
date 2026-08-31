@@ -58,7 +58,8 @@ export interface BookingRequest {
   slotId: string;
   customerName: string;
   customerEmail: string;
-  customerPhone?: string;
+  customerPhone?: string;   // optional
+  address: string;
 }
 
 // ── API Error ─────────────────────────────────────────────────────────────────

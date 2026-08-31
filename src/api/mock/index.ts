@@ -296,6 +296,11 @@ export async function createBooking(
       customerEmail: "Invalid email address",
     });
   }
+  if (!request.address?.trim()) {
+    throw makeError("VALIDATION_ERROR", "Request body failed validation.", {
+      address: "Required",
+    });
+  }
 
   const service = servicesDb.find((s) => s.id === request.serviceId);
   if (!service) {

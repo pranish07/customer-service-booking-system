@@ -68,12 +68,23 @@ export const BookingSchema = z.object({
 
 export type Booking = z.infer<typeof BookingSchema>;
 
+// BookingRequestSchema mirrors the `POST /bookings` body contract
+// (docs/api-contract.md §4). Each rule below deliberately corresponds 1:1 to
+// the server-side validation the mock returns, so client and server can never
+// silently drift:
+//   - customerName  → 400 { customerName: "Required" }  (1–100, non-empty after trim)
+//   - customerEmail → 400 { customerEmail: "Invalid email address" } (valid format)
+//   - customerPhone → optional; 400 { customerPhone: "Invalid" } if > 30 chars when provided
+//   - address       → 400 { address: "Required" }        (1–200, non-empty after trim)
+//   - serviceId/slotId → validated server-side against the store (404/409 in the contract);
+//     flattened to min(1) here because the form composes slot/service from selections.
 export const BookingRequestSchema = z.object({
   serviceId: z.string().min(1),
   slotId: z.string().min(1),
   customerName: z.string().trim().min(1).max(100),
   customerEmail: z.string().email(),
   customerPhone: z.string().trim().max(30).optional(),
+  address: z.string().trim().min(1).max(200),
 });
 
 export type BookingRequest = z.infer<typeof BookingRequestSchema>;
