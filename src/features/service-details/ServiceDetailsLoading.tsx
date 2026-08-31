@@ -2,7 +2,7 @@ import { Box, Skeleton, VStack } from '@chakra-ui/react'
 
 export function ServiceDetailsLoading() {
   return (
-    <VStack align="stretch" spacing={6} maxW="860px" mx="auto">
+    <VStack align="stretch" spacing={6} maxW="860px" mx="auto" role="status" aria-live="polite">
       <Skeleton height="300px" borderRadius="lg" />
       <Box>
         <Skeleton height="24px" width="180px" mb={2} />

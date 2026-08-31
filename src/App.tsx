@@ -2,6 +2,7 @@ import { lazy, Suspense } from 'react'
 import { Routes, Route } from 'react-router-dom'
 import { Center, Spinner } from '@chakra-ui/react'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
+import { DevErrorSimulator } from '@/components/DevErrorSimulator'
 
 const ServiceListPage = lazy(() => import('@/features/service-list/ServiceListPage'))
 const ServiceDetailsPage = lazy(() => import('@/features/service-details/ServiceDetailsPage'))
@@ -10,20 +11,31 @@ const ConfirmationPage = lazy(() => import('@/features/confirmation/Confirmation
 const MyBookingsPage = lazy(() => import('@/features/my-bookings/MyBookingsPage'))
 
 function RouteFallback() {
+  // This is the code-split (Suspense) loading state — distinct from each
+  // feature's own data-loading skeleton. A labelled, live region ensures the
+  // "code is loading" state is announced rather than a blank flash.
   return (
-    <Center minH="60vh">
-      <Spinner size="xl" />
+    <Center minH="60vh" role="status" aria-live="polite">
+      <Spinner size="xl" aria-label="Loading page…" />
     </Center>
   )
 }
 
 /**
  * Top-level router. Each route's page is lazy-loaded into its own chunk and
- * wrapped by Suspense. The whole router sits inside the ErrorBoundary.
+ * wrapped by Suspense; the whole router sits inside the ErrorBoundary.
+ *
+ * Failure model:
+ *   - Per-feature data failures are React Query `isError` states handled inside
+ *     each feature (loading/empty/error) — they never throw during render.
+ *   - Unexpected render/runtime errors propagate here to the ErrorBoundary as
+ *     a safety net. `DevErrorSimulator` (dev only) makes this path reachable:
+ *     open any route with `?__boom`.
  */
 export default function App() {
   return (
     <ErrorBoundary>
+      <DevErrorSimulator />
       <Suspense fallback={<RouteFallback />}>
         <Routes>
           <Route path="/" element={<ServiceListPage />} />

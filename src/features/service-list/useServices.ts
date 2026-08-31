@@ -28,6 +28,7 @@ export function useServices({ search, category }: UseServicesParams) {
   const query = useQuery({
     queryKey: ['services'],
     queryFn: getServices,
+    meta: { errorContext: 'load services' },
   })
 
   const categories = Array.from(

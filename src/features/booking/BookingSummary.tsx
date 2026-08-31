@@ -139,6 +139,7 @@ function SubmitErrorAlert({
   const isValidation = error.kind === 'validation'
   return (
     <Alert
+      role="alert"
       status={isConflict ? 'warning' : 'error'}
       flexDirection="column"
       alignItems="flex-start"

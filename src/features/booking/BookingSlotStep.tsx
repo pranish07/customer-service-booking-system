@@ -22,6 +22,10 @@ interface BookingSlotStepProps {
   slots: AvailabilitySlot[]
   selectedSlotId: string | null
   isLoading: boolean
+  isError: boolean
+  /** True while a background refetch is in flight (e.g. after a slot conflict). */
+  isRefreshing: boolean
+  onRetry: () => void
   onSelectSlot: (slot: AvailabilitySlot) => void
   onBack: () => void
 }
@@ -31,6 +35,9 @@ export function BookingSlotStep({
   slots,
   selectedSlotId,
   isLoading,
+  isError,
+  isRefreshing,
+  onRetry,
   onSelectSlot,
   onBack,
 }: BookingSlotStepProps) {
@@ -45,8 +52,17 @@ export function BookingSlotStep({
       <Text color="gray.600">For {date}</Text>
 
       {isLoading ? (
-        <Box textAlign="center" py={8}>
-          <Spinner />
+        <Box textAlign="center" py={8} role="status" aria-live="polite">
+          <Spinner aria-label="Loading available times" />
+        </Box>
+      ) : isError ? (
+        <Box textAlign="center" py={8} role="alert">
+          <Text color="gray.600">
+            We could not load the available times for this date.
+          </Text>
+          <Button variant="outline" size="sm" mt={4} onClick={onRetry}>
+            Try again
+          </Button>
         </Box>
       ) : slots.length === 0 ? (
         <Box textAlign="center" py={8}>
@@ -59,24 +75,42 @@ export function BookingSlotStep({
           </Button>
         </Box>
       ) : (
-        <SimpleGrid columns={{ base: 2, sm: 3 }} spacing={3}>
-          {slots.map((slot) => {
-            const isBooked = slot.status === 'booked'
-            const isSelected = slot.id === selectedSlotId
-            return (
-              <Button
-                key={slot.id}
-                isDisabled={isBooked}
-                variant={isSelected ? 'solid' : 'outline'}
-                colorScheme={isSelected ? 'green' : isBooked ? 'gray' : 'green'}
-                onClick={() => onSelectSlot(slot)}
-              >
-                {formatTime(slot.startTime)}
-                {isBooked ? ' · Booked' : ''}
-              </Button>
-            )
-          })}
-        </SimpleGrid>
+        <Box>
+          {/* Re-fetching after a slot conflict: the grid below still shows the
+              freshly-returned (pre-refetch) slots, so surface that we're checking
+              for a closer-to-current view rather than silently leaving stale data. */}
+          {isRefreshing && (
+            <Text
+              as="span"
+              fontSize="sm"
+              color="gray.500"
+              role="status"
+              aria-live="polite"
+              mb={3}
+              display="block"
+            >
+              Checking availability…
+            </Text>
+          )}
+          <SimpleGrid columns={{ base: 2, sm: 3 }} spacing={3}>
+            {slots.map((slot) => {
+              const isBooked = slot.status === 'booked'
+              const isSelected = slot.id === selectedSlotId
+              return (
+                <Button
+                  key={slot.id}
+                  isDisabled={isBooked || isRefreshing}
+                  variant={isSelected ? 'solid' : 'outline'}
+                  colorScheme={isSelected ? 'green' : isBooked ? 'gray' : 'green'}
+                  onClick={() => onSelectSlot(slot)}
+                >
+                  {formatTime(slot.startTime)}
+                  {isBooked ? ' · Booked' : ''}
+                </Button>
+              )
+            })}
+          </SimpleGrid>
+        </Box>
       )}
     </VStack>
   )

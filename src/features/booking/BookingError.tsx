@@ -5,14 +5,21 @@ import {
   AlertTitle,
   Button,
 } from '@chakra-ui/react'
+import { useFocusOnMount } from '@/hooks'
 
 interface BookingErrorProps {
   onRetry: () => void
 }
 
 export function BookingError({ onRetry }: BookingErrorProps) {
+  const bannerRef = useFocusOnMount<HTMLDivElement>()
+
   return (
     <Alert
+      ref={bannerRef}
+      role="alert"
+      tabIndex={-1}
+      outline="none"
       status="error"
       variant="subtle"
       flexDirection="column"

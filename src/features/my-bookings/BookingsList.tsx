@@ -1,4 +1,18 @@
-import { Button, Flex, List, ListItem, Spinner, Text, VStack } from '@chakra-ui/react'
+import {
+  Alert,
+  AlertDescription,
+  AlertIcon,
+  AlertTitle,
+  Button,
+  Flex,
+  HStack,
+  List,
+  ListItem,
+  Spinner,
+  Text,
+  VStack,
+} from '@chakra-ui/react'
+import { useFocusOnMount } from '@/hooks'
 import type { Booking } from '@/types'
 
 interface BookingsListProps {
@@ -28,28 +42,48 @@ export function BookingsList({
   onRetry,
   onSelect,
 }: BookingsListProps) {
+  const errorRef = useFocusOnMount<HTMLDivElement>()
+
   if (isLoading) {
     return (
-      <Flex justify="center" py={10}>
-        <Spinner />
+      <Flex justify="center" py={10} role="status" aria-live="polite">
+        <Spinner aria-label="Loading your bookings" />
       </Flex>
     )
   }
 
   if (isError) {
     return (
-      <VStack align="stretch" spacing={3} maxW="440px">
-        <Text color="gray.600">We could not load your bookings. Please try again.</Text>
-        <Button colorScheme="red" alignSelf="flex-start" onClick={onRetry}>
+      <Alert
+        ref={errorRef}
+        role="alert"
+        tabIndex={-1}
+        outline="none"
+        status="error"
+        variant="subtle"
+        flexDirection="column"
+        alignItems="flex-start"
+        borderRadius="md"
+        py={5}
+        maxW="440px"
+      >
+        <HStack>
+          <AlertIcon />
+          <AlertTitle>Could not load bookings</AlertTitle>
+        </HStack>
+        <AlertDescription mb={3}>
+          We could not load your bookings. Please try again in a moment.
+        </AlertDescription>
+        <Button colorScheme="red" size="sm" onClick={onRetry}>
           Try again
         </Button>
-      </VStack>
+      </Alert>
     )
   }
 
   if (bookings.length === 0) {
     return (
-      <Text color="gray.600">
+      <Text color="gray.600" role="status" aria-live="polite">
         You don’t have any bookings yet. <b>Book a service</b> when you’re ready.
       </Text>
     )

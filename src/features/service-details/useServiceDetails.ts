@@ -11,6 +11,7 @@ export function useServiceDetails(serviceId: string) {
   return useQuery({
     queryKey: ['services', serviceId],
     queryFn: () => getServiceDetails(serviceId),
+    meta: { errorContext: `load service ${serviceId}` },
   })
 }
 
@@ -22,6 +23,7 @@ export function useServiceAvailability(serviceId: string) {
   return useQuery({
     queryKey: ['availability', serviceId],
     queryFn: () => getAvailability(serviceId),
+    meta: { errorContext: `load availability for ${serviceId}` },
   })
 }
 

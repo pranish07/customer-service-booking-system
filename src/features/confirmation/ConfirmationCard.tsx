@@ -34,6 +34,8 @@ export function ConfirmationCard({ booking }: ConfirmationCardProps) {
   return (
     <VStack align="stretch" spacing={4} maxW="520px" mx="auto" textAlign="center">
       <Alert
+        role="status"
+        aria-live="polite"
         status="success"
         variant="subtle"
         flexDirection="column"

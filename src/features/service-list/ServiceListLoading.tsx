@@ -2,7 +2,7 @@ import { Box, SimpleGrid, Skeleton } from '@chakra-ui/react'
 
 export function ServiceListLoading() {
   return (
-    <Box>
+    <Box role="status" aria-live="polite">
       <Skeleton height="40px" mb={6} />
       <SimpleGrid columns={{ base: 1, sm: 2, lg: 3 }} spacing={6}>
         {Array.from({ length: 6 }).map((_, i) => (

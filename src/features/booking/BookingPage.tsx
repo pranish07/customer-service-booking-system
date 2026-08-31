@@ -148,6 +148,9 @@ export default function BookingPage() {
           slots={availability.data ?? []}
           selectedSlotId={state.slot?.id ?? null}
           isLoading={availability.isLoading}
+          isError={availability.isError}
+          isRefreshing={availability.isFetching}
+          onRetry={() => availability.refetch()}
           onSelectSlot={(slot) => dispatch({ type: 'SELECT_SLOT', slot })}
           onBack={() => dispatch({ type: 'GO_BACK' })}
         />

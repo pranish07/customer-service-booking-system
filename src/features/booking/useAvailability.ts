@@ -15,6 +15,7 @@ export function useAvailability(serviceId: string, date: string | null) {
     queryKey: ['availability', serviceId, { date }],
     queryFn: () => getAvailability(serviceId, { date: date! }),
     enabled: Boolean(date),
+    meta: { errorContext: `load availability for ${serviceId} on ${date ?? '?'}` },
   })
 }
 
@@ -26,6 +27,7 @@ export function useBookingService(serviceId: string) {
   return useQuery({
     queryKey: ['services', serviceId],
     queryFn: () => getServiceDetails(serviceId),
+    meta: { errorContext: `load service ${serviceId}` },
   })
 }
 

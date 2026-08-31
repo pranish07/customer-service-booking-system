@@ -1,6 +1,19 @@
 import { useState } from 'react'
-import { Button, Container as ChakraContainer, Flex, Heading, HStack, Spinner, Text, VStack } from '@chakra-ui/react'
+import {
+  Alert,
+  AlertDescription,
+  AlertIcon,
+  AlertTitle,
+  Button,
+  Container as ChakraContainer,
+  Flex,
+  Heading,
+  HStack,
+  Spinner,
+  VStack,
+} from '@chakra-ui/react'
 import { Link as RouterLink } from 'react-router-dom'
+import { useFocusOnMount } from '@/hooks'
 import { MyBookingsEmailPrompt } from './MyBookingsEmailPrompt'
 import { BookingsList } from './BookingsList'
 import { BookingDetails } from './BookingDetails'
@@ -18,6 +31,7 @@ export default function MyBookingsPage() {
 
   const bookings = useBookings(email)
   const detail = useBookingById(selectedId)
+  const detailErrorRef = useFocusOnMount<HTMLDivElement>()
 
   return (
     <ChakraContainer maxW="720px" py={10}>
@@ -33,20 +47,35 @@ export default function MyBookingsPage() {
           <MyBookingsEmailPrompt onSubmit={setEmail} />
         ) : selectedId !== null ? (
           detail.isLoading ? (
-            <Flex justify="center" py={10}>
-              <Spinner />
+            <Flex justify="center" py={10} role="status" aria-live="polite">
+              <Spinner aria-label="Loading booking details" />
             </Flex>
           ) : detail.isError ? (
-            <VStack align="stretch" spacing={3} maxW="520px">
-              <Text color="gray.600">We could not load this booking.</Text>
-              <Button
-                colorScheme="red"
-                alignSelf="flex-start"
-                onClick={() => detail.refetch()}
-              >
+            <Alert
+              ref={detailErrorRef}
+              role="alert"
+              tabIndex={-1}
+              outline="none"
+              status="error"
+              variant="subtle"
+              flexDirection="column"
+              alignItems="flex-start"
+              borderRadius="md"
+              py={5}
+              maxW="520px"
+            >
+              <HStack>
+                <AlertIcon />
+                <AlertTitle>Could not load booking</AlertTitle>
+              </HStack>
+              <AlertDescription mb={3}>
+                We could not load the details for this booking. Please try again in a
+                moment.
+              </AlertDescription>
+              <Button colorScheme="red" size="sm" onClick={() => detail.refetch()}>
                 Try again
               </Button>
-            </VStack>
+            </Alert>
           ) : detail.data ? (
             <BookingDetails booking={detail.data} onBack={() => setSelectedId(null)} />
           ) : null

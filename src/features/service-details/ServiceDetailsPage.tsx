@@ -27,7 +27,17 @@ export default function ServiceDetailsPage() {
   }
 
   const service = details.data!
-  const availabilitySummary = summarizeAvailability(availability.data)
+  // Availability is only a secondary summary line, but it must still resolve to
+  // an explicit state rather than silently collapsing "still loading" or
+  // "failed" into the empty/no-availability copy, which would be misleading.
+  let availabilitySummary: string
+  if (availability.isLoading) {
+    availabilitySummary = 'Checking availability…'
+  } else if (availability.isError) {
+    availabilitySummary = 'Availability unavailable right now.'
+  } else {
+    availabilitySummary = summarizeAvailability(availability.data)
+  }
 
   function handleBook() {
     navigate(`/services/${service.id}/book`)

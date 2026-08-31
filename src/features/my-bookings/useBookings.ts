@@ -11,6 +11,7 @@ export function useBookings(email: string | null) {
     queryKey: ['bookings', { email }],
     queryFn: () => getBookings(email!),
     enabled: Boolean(email),
+    meta: { errorContext: 'load bookings' },
   })
 }
 
@@ -23,5 +24,6 @@ export function useBookingById(bookingId: string | null) {
     queryKey: ['bookings', bookingId],
     queryFn: () => getBookingById(bookingId!),
     enabled: Boolean(bookingId),
+    meta: { errorContext: `load booking ${bookingId ?? '?'}` },
   })
 }

@@ -6,30 +6,35 @@ import {
   Button,
   VStack,
 } from '@chakra-ui/react'
-import type { ApiError } from '@/types'
+import { useFocusOnMount } from '@/hooks'
+import { userFacingMessage } from '@/api/userMessage'
 
 interface ServiceListErrorProps {
   error: unknown
   onRetry: () => void
 }
 
-function messageFrom(error: unknown): string {
-  if (error && typeof error === 'object' && 'error' in error) {
-    const body = (error as ApiError).error
-    return body.message || body.code
-  }
-  return 'Something went wrong while loading services.'
-}
-
 export function ServiceListError({ error, onRetry }: ServiceListErrorProps) {
+  // Only present a friendly message to the user; the raw server code/message is
+  // still available on `error` for telemetry (`logApiError`) but never shown.
+  const bannerRef = useFocusOnMount<HTMLDivElement>()
+  const message = userFacingMessage(
+    error,
+    'Something went wrong while loading services.',
+  )
+
   return (
     <Alert
+      ref={bannerRef}
+      role="alert"
+      tabIndex={-1}
       status="error"
       variant="subtle"
       flexDirection="column"
       alignItems="center"
       justifyContent="center"
       textAlign="center"
+      outline="none"
       borderRadius="md"
       py={8}
     >
@@ -38,7 +43,7 @@ export function ServiceListError({ error, onRetry }: ServiceListErrorProps) {
         Could not load services
       </AlertTitle>
       <AlertDescription maxWidth="sm" mb={4}>
-        {messageFrom(error)}
+        {message}
       </AlertDescription>
       <VStack spacing={2}>
         <Button colorScheme="red" onClick={onRetry}>

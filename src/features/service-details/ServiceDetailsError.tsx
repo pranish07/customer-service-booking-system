@@ -7,6 +7,7 @@ import {
   VStack,
 } from '@chakra-ui/react'
 import { Link } from 'react-router-dom'
+import { useFocusOnMount } from '@/hooks'
 import type { ApiError } from '@/types'
 
 interface ServiceDetailsErrorProps {
@@ -25,9 +26,14 @@ function isNotFound(error: unknown): boolean {
 
 export function ServiceDetailsError({ error, onRetry }: ServiceDetailsErrorProps) {
   const notFound = isNotFound(error)
+  const bannerRef = useFocusOnMount<HTMLDivElement>()
 
   return (
     <Alert
+      ref={bannerRef}
+      role="alert"
+      tabIndex={-1}
+      outline="none"
       status={notFound ? 'info' : 'error'}
       variant="subtle"
       flexDirection="column"
