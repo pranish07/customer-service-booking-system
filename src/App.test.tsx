@@ -30,4 +30,19 @@ describe('App routing scaffold', () => {
     renderApp('/my-bookings')
     expect(await screen.findByText('My Bookings')).toBeInTheDocument()
   })
+
+  it('renders a service details page with a booking CTA at /services/:serviceId', async () => {
+    renderApp('/services/svc_01')
+    expect(
+      await screen.findByRole('heading', { name: 'Deep Tissue Massage' }),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: 'Book this service' }),
+    ).toBeInTheDocument()
+  })
+
+  it('shows a not-found state for an unknown service id', async () => {
+    renderApp('/services/svc_does_not_exist')
+    expect(await screen.findByText('Service not found')).toBeInTheDocument()
+  })
 })

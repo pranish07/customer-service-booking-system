@@ -148,7 +148,8 @@ GET /api/v1/services/{service_id}
   "category": "Wellness",
   "imageUrl": "https://cdn.example.com/images/massage.jpg",
   "location": "123 Wellness Ave, Suite 200",
-  "provider": "Sarah Johnson, LMT"
+  "provider": "Sarah Johnson, LMT",
+  "averageRating": 4.9
 }
 ```
 
@@ -165,6 +166,7 @@ GET /api/v1/services/{service_id}
 | `imageUrl`         | `string \| null`  | Optional hero image URL                             |
 | `location`         | `string`          | Physical address or meeting location                |
 | `provider`         | `string`          | Name and credentials of the service provider        |
+| `averageRating`    | `number`          | Aggregate star rating from `0.0` to `5.0`           |
 
 #### Status Codes
 

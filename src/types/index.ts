@@ -20,6 +20,7 @@ export interface ServiceDetails extends Service {
   longDescription: string;
   location: string;
   provider: string;
+  averageRating: number;
 }
 
 // ── Availability ──────────────────────────────────────────────────────────────

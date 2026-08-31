@@ -29,6 +29,7 @@ export const ServiceDetailsSchema = ServiceSchema.extend({
   longDescription: z.string(),
   location: z.string(),
   provider: z.string(),
+  averageRating: z.number().min(0).max(5),
 });
 
 export type ServiceDetails = z.infer<typeof ServiceDetailsSchema>;

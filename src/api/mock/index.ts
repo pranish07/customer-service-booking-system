@@ -78,31 +78,35 @@ const servicesDb: Service[] = [
 
 const serviceDetailsDb: Record<
   string,
-  Pick<ServiceDetails, "longDescription" | "location" | "provider">
+  Pick<ServiceDetails, "longDescription" | "location" | "provider" | "averageRating">
 > = {
   [id("svc", 1)]: {
     longDescription:
       "Our deep tissue massage uses firm pressure and slow strokes to reach deeper layers of muscle and fascia. Ideal for chronic pain, injury recovery, and tension relief. Includes a brief consultation before the session.",
     location: "123 Wellness Ave, Suite 200",
     provider: "Sarah Johnson, LMT",
+    averageRating: 4.9,
   },
   [id("svc", 2)]: {
     longDescription:
       "Our expert stylists provide a personalised haircut experience. Includes wash, cut, blow-dry, and styling. We use premium products suited to your hair type.",
     location: "456 Style Blvd, Floor 1",
     provider: "Marco Rossi",
+    averageRating: 4.7,
   },
   [id("svc", 3)]: {
     longDescription:
       "Achieve your fitness goals with a certified personal trainer. Sessions include a warm-up, custom workout plan, and cool-down. Suitable for all fitness levels.",
     location: "789 Fit Street, Gym Level",
     provider: "Alex Kim, NASM-CPT",
+    averageRating: 4.8,
   },
   [id("svc", 4)]: {
     longDescription:
       "Get expert advice on tax planning, deductions, and compliance. Ideal for individuals, freelancers, and small business owners. Includes a written summary of recommendations.",
     location: "321 Finance Row, Office 4B",
     provider: "Diana Patel, CPA",
+    averageRating: 5.0,
   },
 };
 
