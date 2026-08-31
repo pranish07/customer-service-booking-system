@@ -1,10 +1,11 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { MemoryRouter, Routes, Route } from 'react-router-dom'
+import { MemoryRouter, Routes, Route, useSearchParams } from 'react-router-dom'
 import { ChakraProvider } from '@chakra-ui/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { describe, it, expect } from 'vitest'
 import BookingPage from './BookingPage'
+import { setForceError } from '@/api/mock'
 
 const TIMEOUT = { timeout: 8000 }
 
@@ -131,6 +132,81 @@ describe('Booking flow', () => {
       expect(
         screen.queryByRole('heading', { name: 'Review your booking' }),
       ).toBeNull()
+    },
+  )
+
+  it(
+    'confirms the booking and navigates to confirmation with the booking id',
+    { timeout: 20000 },
+    async () => {
+      const user = userEvent.setup()
+
+      function ConfirmationProbe() {
+        const [params] = useSearchParams()
+        return <div>landed?bookingId={params.get('bookingId')}</div>
+      }
+
+      const queryClient = new QueryClient({
+        defaultOptions: { queries: { retry: false } },
+      })
+      render(
+        <ChakraProvider>
+          <QueryClientProvider client={queryClient}>
+            <MemoryRouter initialEntries={['/services/svc_01/book']}>
+              <Routes>
+                <Route path="/services/:serviceId/book" element={<BookingPage />} />
+                <Route path="/confirmation" element={<ConfirmationProbe />} />
+              </Routes>
+            </MemoryRouter>
+          </QueryClientProvider>
+        </ChakraProvider>,
+      )
+
+      await pickDateAndContinue()
+      await pickFirstAvailableSlot()
+      await screen.findByText('Full name', {}, TIMEOUT)
+
+      await fillCustomerForm(user, 'jane@example.com')
+      await user.click(screen.getByRole('button', { name: 'Review booking' }))
+      await screen.findByRole('heading', { name: 'Review your booking' }, TIMEOUT)
+
+      await user.click(screen.getByRole('button', { name: /confirm booking/i }))
+
+      expect(
+        await screen.findByText(/^landed\?bookingId=bkg_/, TIMEOUT),
+      ).toBeInTheDocument()
+    },
+  )
+
+  it(
+    'surfaces a slot-conflict message and returns to the slot grid',
+    { timeout: 20000 },
+    async () => {
+      const user = userEvent.setup()
+      renderBooking()
+
+      await pickDateAndContinue()
+      await pickFirstAvailableSlot()
+      await screen.findByText('Full name', {}, TIMEOUT)
+
+      await fillCustomerForm(user, 'jane@example.com')
+      await user.click(screen.getByRole('button', { name: 'Review booking' }))
+      await screen.findByRole('heading', { name: 'Review your booking' }, TIMEOUT)
+
+      // Force the next createBooking request to fail as a 409 slot conflict.
+      setForceError('SLOT_UNAVAILABLE')
+      await user.click(screen.getByRole('button', { name: /confirm booking/i }))
+
+      expect(
+        await screen.findByText('Time no longer available', {}, TIMEOUT),
+      ).toBeInTheDocument()
+
+      await user.click(
+        screen.getByRole('button', { name: /choose another time/i }),
+      )
+      expect(
+        await screen.findByRole('heading', { name: 'Available times' }, TIMEOUT),
+      ).toBeInTheDocument()
     },
   )
 })

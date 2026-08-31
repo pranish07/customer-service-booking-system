@@ -309,6 +309,7 @@ POST /api/v1/bookings
   "id": "bkg_01H8X1A2B3C4D5E6F7G8H9J0K",
   "serviceId": "svc_01H8X1A2B3C4D5E6F7G8H9J0K",
   "serviceName": "Deep Tissue Massage",
+  "provider": "Sarah Johnson, LMT",
   "slotId": "slot_01H8X1A2B3C4D5E6F7G8H9J0K",
   "startTime": "2026-09-01T09:00:00Z",
   "endTime": "2026-09-01T10:00:00Z",
@@ -325,6 +326,7 @@ POST /api/v1/bookings
 | `id`             | `string`          | Unique booking identifier (prefixed `bkg_`)            |
 | `serviceId`      | `string`          | The booked service                                     |
 | `serviceName`    | `string`          | Denormalized service name for display                  |
+| `provider`       | `string`          | Denormalized service provider for display              |
 | `slotId`         | `string`          | The booked slot                                        |
 | `startTime`      | `string`          | Denormalized slot start (ISO 8601 UTC)                 |
 | `endTime`        | `string`          | Denormalized slot end (ISO 8601 UTC)                   |
@@ -449,6 +451,7 @@ GET /api/v1/bookings
     "id": "bkg_01H8X1A2B3C4D5E6F7G8H9J0K",
     "serviceId": "svc_01H8X1A2B3C4D5E6F7G8H9J0K",
     "serviceName": "Deep Tissue Massage",
+    "provider": "Sarah Johnson, LMT",
     "slotId": "slot_01H8X1A2B3C4D5E6F7G8H9J0K",
     "startTime": "2026-09-01T09:00:00Z",
     "endTime": "2026-09-01T10:00:00Z",
@@ -520,6 +523,7 @@ GET /api/v1/bookings/{booking_id}
   "id": "bkg_01H8X1A2B3C4D5E6F7G8H9J0K",
   "serviceId": "svc_01H8X1A2B3C4D5E6F7G8H9J0K",
   "serviceName": "Deep Tissue Massage",
+  "provider": "Sarah Johnson, LMT",
   "slotId": "slot_01H8X1A2B3C4D5E6F7G8H9J0K",
   "startTime": "2026-09-01T09:00:00Z",
   "endTime": "2026-09-01T10:00:00Z",

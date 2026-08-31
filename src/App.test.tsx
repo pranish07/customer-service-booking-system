@@ -33,7 +33,10 @@ describe('App routing scaffold', () => {
   it('renders My Bookings at /my-bookings', async () => {
     renderApp('/my-bookings')
     expect(
-      await screen.findByText('My Bookings', {}, TIMEOUT),
+      await screen.findByRole('heading', { name: 'My bookings' }, TIMEOUT),
+    ).toBeInTheDocument()
+    expect(
+      await screen.findByRole('heading', { name: 'Look up your bookings' }, TIMEOUT),
     ).toBeInTheDocument()
   })
 

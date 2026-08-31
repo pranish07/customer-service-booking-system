@@ -1,16 +1,45 @@
-import { useMemo, useReducer, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { useMemo, useReducer, useRef, useState } from 'react'
+import { useNavigate, useParams } from 'react-router-dom'
 import { Container as ChakraContainer, Heading, VStack } from '@chakra-ui/react'
 import { bookingFlowReducer, type CustomerDetails } from './bookingFlow'
 import { useBookingService, useAvailability, getSelectableDates } from './useAvailability'
+import { useCreateBooking } from './useCreateBooking'
 import { BookingStepper } from './BookingStepper'
 import { BookingDateStep } from './BookingDateStep'
 import { BookingSlotStep } from './BookingSlotStep'
 import { CustomerDetailsForm } from './CustomerDetailsForm'
-import { BookingSummary } from './BookingSummary'
+import { BookingSummary, type BookingSubmitError } from './BookingSummary'
 import { BookingLoading } from './BookingLoading'
 import { BookingError } from './BookingError'
 import type { CustomerDetailsFormValues } from './customerDetailsSchema'
+import type { BookingRequest } from '@/types'
+
+/**
+ * Reduces a normalised ApiError thrown by POST /bookings into a structured
+ * submit error the summary step can render, mapping server error codes onto
+ * the three supported recovery paths (field 400, slot-taken 409, generic 500).
+ */
+function toSubmitError(err: unknown): BookingSubmitError | null {
+  const body = (err as { error?: { code?: string; message?: string; details?: Record<string, string> } })?.error
+  if (!body?.code) return null
+  if (body.code === 'VALIDATION_ERROR') {
+    return {
+      kind: 'validation',
+      message: body.message ?? 'Please correct the highlighted fields.',
+      fields: body.details,
+    }
+  }
+  if (body.code === 'SLOT_UNAVAILABLE' || body.code === 'DUPLICATE_BOOKING') {
+    return {
+      kind: 'conflict',
+      message: body.message ?? 'This time slot is no longer available.',
+    }
+  }
+  return {
+    kind: 'server',
+    message: body.message ?? 'Something went wrong. Please try again.',
+  }
+}
 
 /**
  * Feature: booking flow. Reads :serviceId from the URL, owns the multi-step
@@ -35,6 +64,16 @@ export default function BookingPage() {
   const service = useBookingService(serviceId)
   const availability = useAvailability(serviceId, state.date)
 
+  const navigate = useNavigate()
+  const createBooking = useCreateBooking((booking) => {
+    navigate(`/confirmation?bookingId=${booking.id}`, { state: { booking } })
+  })
+  // Keep the last submitted request so "Try again" can re-run the mutation
+  // without the user having to re-enter anything on this visit.
+  const lastRequestRef = useRef<BookingRequest | null>(null)
+
+  const submitError = createBooking.error ? toSubmitError(createBooking.error) : null
+
   const { minDate, maxDate } = useMemo(() => {
     const all = getSelectableDates()
     return { minDate: all[0], maxDate: all[all.length - 1] }
@@ -48,6 +87,42 @@ export default function BookingPage() {
       address: values.address,
     }
     dispatch({ type: 'SET_CUSTOMER', customer })
+  }
+
+  function handleConfirm() {
+    if (createBooking.isPending) return // guard against double-clicks
+    if (!state.slot || !state.customer || !service.data) return
+    const request: BookingRequest = {
+      serviceId: state.slot.serviceId,
+      slotId: state.slot.id,
+      customerName: state.customer.customerName,
+      customerEmail: state.customer.customerEmail,
+      customerPhone: state.customer.customerPhone || undefined,
+      address: state.customer.address,
+    }
+    lastRequestRef.current = request
+    createBooking.mutate(request)
+  }
+
+  // 400 validation — return to the details form to fix the highlighted fields.
+  function handleEditDetails() {
+    createBooking.reset()
+    dispatch({ type: 'GO_BACK' })
+  }
+
+  // 409 conflict — return to the slot grid and refetch so the taken slot shows
+  // as booked/disabled before the customer picks another time.
+  function handlePickAnotherTime() {
+    createBooking.reset()
+    dispatch({ type: 'RETURN_TO_SLOT' })
+    void availability.refetch()
+  }
+
+  // 500 generic — re-run the last request.
+  function handleRetry() {
+    if (!lastRequestRef.current) return
+    createBooking.reset()
+    createBooking.mutate(lastRequestRef.current)
   }
 
   if (service.isError) return <BookingError onRetry={() => service.refetch()} />
@@ -95,7 +170,13 @@ export default function BookingPage() {
             service={service.data}
             slot={state.slot}
             customer={state.customer}
+            isConfirming={createBooking.isPending}
+            submitError={submitError}
+            onConfirm={handleConfirm}
             onBack={() => dispatch({ type: 'GO_BACK' })}
+            onEditDetails={handleEditDetails}
+            onPickAnotherTime={handlePickAnotherTime}
+            onRetry={handleRetry}
           />
         )
       }

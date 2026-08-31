@@ -43,9 +43,10 @@ export interface Booking {
   id: string;
   serviceId: string;
   serviceName: string;
+  provider: string;         // denormalized from the booked service's details
   slotId: string;
-  startTime: string;
-  endTime: string;
+  startTime: string;        // denormalized
+  endTime: string;          // denormalized
   customerName: string;
   customerEmail: string;
   customerPhone: string | null;

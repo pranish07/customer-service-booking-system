@@ -56,6 +56,7 @@ export const BookingSchema = z.object({
   id: z.string(),
   serviceId: z.string(),
   serviceName: z.string(),
+  provider: z.string(),
   slotId: z.string(),
   startTime: z.string().datetime(),
   endTime: z.string().datetime(),

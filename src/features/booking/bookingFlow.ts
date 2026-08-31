@@ -22,6 +22,7 @@ export type BookingFlowAction =
   | { type: 'SELECT_SLOT'; slot: AvailabilitySlot }
   | { type: 'SET_CUSTOMER'; customer: CustomerDetails }
   | { type: 'GO_BACK' }
+  | { type: 'RETURN_TO_SLOT' }
 
 /**
  * The booking flow is a small linear state machine (date → slot → details →
@@ -46,6 +47,10 @@ export function bookingFlowReducer(
       return { ...state, slot: action.slot, step: 'details' }
     case 'SET_CUSTOMER':
       return { ...state, customer: action.customer, step: 'summary' }
+    case 'RETURN_TO_SLOT':
+      // Dropping the selected slot resends the customer to the slot grid so
+      // they can pick another time after a 409 (slot taken/duplicate) conflict.
+      return { ...state, slot: null, step: 'slot' }
     case 'GO_BACK': {
       const next: BookingStep =
         state.step === 'slot'
