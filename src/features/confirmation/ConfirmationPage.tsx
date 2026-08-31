@@ -1,5 +1,5 @@
-import { Button, Container as ChakraContainer, Heading, Text, VStack } from '@chakra-ui/react'
-import { useLocation, useSearchParams } from 'react-router-dom'
+import { Button, Container as ChakraContainer, Heading, HStack, Text, VStack } from '@chakra-ui/react'
+import { Link as RouterLink, useLocation, useSearchParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { getBookingById } from '@/api/services'
 import { ConfirmationCard } from './ConfirmationCard'
@@ -33,36 +33,33 @@ export default function ConfirmationPage() {
 
   return (
     <ChakraContainer maxW="760px" py={10}>
-      {isLoading && !stateBooking ? (
-        <VStack align="stretch" spacing={6}>
+      <VStack align="stretch" spacing={6}>
+        <HStack justify="space-between" align="center">
           <Heading size="lg">Booking confirmation</Heading>
-          <Text as="span" color="gray.500">
-            Loading confirmation…
-          </Text>
-        </VStack>
-      ) : isError && !stateBooking ? (
-        <VStack align="stretch" spacing={6}>
-          <Heading size="lg">Booking confirmation</Heading>
-          <Text as="span" color="gray.500">
-            We could not load this booking. It may have been removed.
-          </Text>
-          <Button colorScheme="red" onClick={() => refetch()} alignSelf="flex-start">
-            Try again
+          <Button variant="ghost" size="sm" as={RouterLink} to="/">
+            ← Back to services
           </Button>
-        </VStack>
-      ) : booking ? (
-        <VStack align="stretch" spacing={6}>
-          <Heading size="lg">Booking confirmation</Heading>
+        </HStack>
+
+        {isLoading && !stateBooking ? (
+          <Text color="gray.500">Loading confirmation…</Text>
+        ) : isError && !stateBooking ? (
+          <VStack align="stretch" spacing={4}>
+            <Text as="span" color="gray.500">
+              We could not load this booking. It may have been removed.
+            </Text>
+            <Button colorScheme="red" onClick={() => refetch()} alignSelf="flex-start">
+              Try again
+            </Button>
+          </VStack>
+        ) : booking ? (
           <ConfirmationCard booking={booking} />
-        </VStack>
-      ) : (
-        <VStack align="stretch" spacing={6}>
-          <Heading size="lg">Booking confirmation</Heading>
+        ) : (
           <Text as="span" color="gray.500">
             No booking reference was provided in this link.
           </Text>
-        </VStack>
-      )}
+        )}
+      </VStack>
     </ChakraContainer>
   )
 }

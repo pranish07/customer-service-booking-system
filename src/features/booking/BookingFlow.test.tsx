@@ -173,7 +173,7 @@ describe('Booking flow', () => {
       await user.click(screen.getByRole('button', { name: /confirm booking/i }))
 
       expect(
-        await screen.findByText(/^landed\?bookingId=bkg_/, TIMEOUT),
+        await screen.findByText(/^landed\?bookingId=bkg_/, {}, TIMEOUT),
       ).toBeInTheDocument()
     },
   )

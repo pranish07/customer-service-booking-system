@@ -14,6 +14,7 @@ import {
   Text,
   VStack,
 } from '@chakra-ui/react'
+import { Link as RouterLink } from 'react-router-dom'
 import type { ServiceDetails } from '@/types'
 
 interface ServiceDetailsContentProps {
@@ -39,6 +40,11 @@ export function ServiceDetailsContent({
 
   return (
     <VStack align="stretch" spacing={6} maxW="860px" mx="auto">
+      <Box alignSelf="flex-start">
+        <Button variant="ghost" size="sm" as={RouterLink} to="/">
+          ← Back to services
+        </Button>
+      </Box>
       {service.imageUrl && (
         <Image
           src={service.imageUrl}

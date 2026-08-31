@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { Button, Container as ChakraContainer, Flex, Heading, Spinner, Text, VStack } from '@chakra-ui/react'
+import { Button, Container as ChakraContainer, Flex, Heading, HStack, Spinner, Text, VStack } from '@chakra-ui/react'
+import { Link as RouterLink } from 'react-router-dom'
 import { MyBookingsEmailPrompt } from './MyBookingsEmailPrompt'
 import { BookingsList } from './BookingsList'
 import { BookingDetails } from './BookingDetails'
@@ -21,7 +22,12 @@ export default function MyBookingsPage() {
   return (
     <ChakraContainer maxW="720px" py={10}>
       <VStack align="stretch" spacing={6}>
-        <Heading size="lg">My bookings</Heading>
+        <HStack justify="space-between" align="center">
+          <Heading size="lg">My bookings</Heading>
+          <Button variant="ghost" size="sm" as={RouterLink} to="/">
+            ← Back to services
+          </Button>
+        </HStack>
 
         {email === null ? (
           <MyBookingsEmailPrompt onSubmit={setEmail} />

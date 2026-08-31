@@ -41,7 +41,7 @@ describe('Confirmation page', () => {
       expect(screen.getByText('Confirmed')).toBeInTheDocument()
       expect(screen.getByText('bkg_01')).toBeInTheDocument()
       expect(
-        screen.getByRole('button', { name: 'View my bookings' }),
+        screen.getByRole('link', { name: 'View my bookings' }),
       ).toBeInTheDocument()
     },
   )
