@@ -23,7 +23,7 @@ function renderApp(initialPath = '/') {
 describe('App routing scaffold', () => {
   it('renders the service list on the root path', async () => {
     renderApp('/')
-    expect(await screen.findByText('Service List')).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'Services' })).toBeInTheDocument()
   })
 
   it('renders My Bookings at /my-bookings', async () => {
