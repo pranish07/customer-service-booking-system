@@ -1,3 +1,8 @@
-// Feature-specific API functions (e.g. service list, service details,
-// create booking). Consumed by hooks; no UI concerns live here.
-export {}
+export {
+  getServices,
+  getServiceDetails,
+  getAvailability,
+  createBooking,
+  getBookings,
+  getBookingById,
+} from "../client";

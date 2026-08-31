@@ -1,3 +1,10 @@
-// Data-access boundary for the whole booking module.
-// Exposes typed query/mutation functions used by React Query hooks.
-export {}
+export {
+  getServices,
+  getServiceDetails,
+  getAvailability,
+  createBooking,
+  getBookings,
+  getBookingById,
+} from "./services";
+
+export { setForceError, resetDb } from "./mock";
