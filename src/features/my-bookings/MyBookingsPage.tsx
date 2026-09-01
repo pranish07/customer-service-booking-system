@@ -12,7 +12,7 @@ import {
   VStack,
 } from '@chakra-ui/react'
 import { Link as RouterLink } from 'react-router-dom'
-import { BackIcon, MyBookingsPageSkeleton } from '@/components'
+import { BackIcon } from '@/components'
 import { useFocusOnMount } from '@/hooks'
 import { MyBookingsEmailPrompt } from './MyBookingsEmailPrompt'
 import { BookingsList } from './BookingsList'
@@ -52,8 +52,6 @@ export default function MyBookingsPage() {
 
         {email === null ? (
           <MyBookingsEmailPrompt onSubmit={setEmail} />
-        ) : bookings.isLoading ? (
-          <MyBookingsPageSkeleton />
         ) : selectedId !== null ? (
           detail.isLoading ? (
             <BookingDetailsLoading />
