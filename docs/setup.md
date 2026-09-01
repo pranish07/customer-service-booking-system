@@ -8,7 +8,7 @@ how to run the app, how the in-process mock API works, and how to run tests.
 ## Prerequisites
 
 - **Node.js 18+** and **npm** (the project is a Vite + React + TypeScript SPA).
-- No database or separate backend is required — the app runs in **mock-API
+- No database or separate backend is required. The app runs in **mock-API
   mode** by default (see below), so everything runs in a single process.
 
 ## Installation
@@ -25,7 +25,7 @@ single environment variable read at the client boundary
 
 | `VITE_USE_MOCK_API` | Behaviour                                                        |
 |---------------------|------------------------------------------------------------------|
-| `true` (default)    | Client calls the in-process mock handlers — no network/server.   |
+| `true` (default)    | Client calls the in-process mock handlers. No network or server is used.   |
 | `false`             | Client issues real `fetch()` calls to `/api/v1/...` (your server). |
 
 By default `.env` sets `VITE_USE_MOCK_API=true`. To run against a real backend,
@@ -34,7 +34,7 @@ URL in `src/api/client/index.ts`). `.env.example` documents the available
 variables. Env vars are read via Vite's `import.meta.env`; changes require a
 dev-server restart.
 
-Swapping backends requires **no code changes** — features always call
+Swapping backends requires **no code changes**. Features always call
 `api/services` functions, which the client routes to mock or real based on
 this toggle.
 
@@ -48,7 +48,7 @@ npm run preview # preview the production build
 
 ## How the mock API runs
 
-The mock is **in-process** — there is no separate server to start. When
+The mock is **in-process**. There is no separate server to start. When
 `VITE_USE_MOCK_API=true`:
 
 - `api/client` calls `api/mock` handlers directly instead of `fetch`. The
@@ -60,10 +60,9 @@ The mock is **in-process** — there is no separate server to start. When
   schema parsing + error normalization), so the mock exercises production
   code paths rather than bypassing them.
 - Two test/debug utilities are exposed (`src/api/mock/index.ts`):
-  - `setForceError(code)` — force the mock to return a specific error (e.g.
-    `SLOT_UNAVAILABLE`) for every subsequent request, for demoing error
-    branches. Pass `null` to clear.
-  - `resetDb()` — restore the in-memory seed data (used in test isolation).
+- `setForceError(code)` forces the mock to return a specific error (such as
+    `SLOT_UNAVAILABLE`) for every subsequent request. Pass `null` to clear it.
+  - `resetDb()` restores the in-memory seed data. It is used for test isolation.
 
 Call these from the browser devtools console or from tests.
 
@@ -120,11 +119,11 @@ to force a malformed payload and prove the real client-side Zod validation
 surfaces it as an `ApiError`.
 
 The test environment uses `jsdom` with `globals: true` and a `testTimeout` of
-`20s` (see `vite.config.ts`) — the generous timeout accommodates the mock
+`20s` (see `vite.config.ts`). The generous timeout accommodates the mock
 layer's artificial network delay.
 
 ## Document index
 
-- `docs/architecture.md` — code structure and layering.
-- `docs/api-contract.md` — the HTTP contract the client and mock implement.
-- `docs/decisions.md` — the technical decisions behind these choices.
+- `docs/architecture.md`: code structure and layering.
+- `docs/api-contract.md`: the HTTP contract the client and mock implement.
+- `docs/decisions.md`: the technical decisions behind these choices.

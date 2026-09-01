@@ -6,7 +6,7 @@ This document describes the architecture of the customer-service booking system.
 
 ## 1. Layered Architecture
 
-Every feature follows a strict dependency direction — layers only import from the layer directly below them.
+Every feature follows a strict dependency direction. Each layer imports only from the layer directly below it.
 
 ```
 ┌─────────────────────────────────────────────────────────┐
@@ -39,7 +39,7 @@ Every feature follows a strict dependency direction — layers only import from 
 ```
 src/
 ├── api/
-│   ├── index.ts              # Public barrel — re-exports service functions
+│   ├── index.ts              # Public barrel, re-exports service functions
 │   ├── client/
 │   │   ├── index.ts          # HTTP client: fetch + Zod validation + mock toggle
 │   │   └── schemas.ts        # Zod schemas (runtime source of truth)
@@ -50,7 +50,7 @@ src/
 │
 ├── components/
 │   ├── index.ts              # Barrel for shared, feature-agnostic components
-│   ├── ErrorBoundary.tsx     # Class component — last-resort render-error catch
+│   ├── ErrorBoundary.tsx     # Class component, last-resort render-error catch
 │   └── PlaceholderPage.tsx   # Temporary scaffold (removed when features land)
 │
 ├── features/
@@ -95,7 +95,7 @@ src/
 
 ## 3. Feature Boundaries
 
-Each feature folder is an isolated unit. Cross-feature communication is limited to URL navigation — one feature never imports another feature's components, hooks, or internal state.
+Each feature folder is an isolated unit. Cross-feature communication is limited to URL navigation. One feature never imports another feature's components, hooks, or internal state.
 
 ```
 service-list ──(link)──► service-details ──(link)──► booking ──(navigate)──► confirmation
@@ -115,7 +115,7 @@ If two features need the same data (e.g. both need a service list), each calls i
 
 ---
 
-## 4. Component Responsibilities — Container / Presentational Split
+## 4. Component Responsibilities: Container and Presentational Split
 
 **This is a rule, not an aspiration. Every feature phase must follow it.**
 
@@ -129,7 +129,7 @@ Each feature page is composed of two layers:
 - It renders the correct presentational component based on the state: `<ServiceListLoading />`, `<ServiceListError />`, `<ServiceListEmpty />`, or `<ServiceList data={services} />`.
 - It owns URL param extraction (`useParams`, `useSearchParams`).
 - It owns navigation callbacks (`useNavigate`).
-- It never renders raw HTML or styling — all visual output is delegated to presentational components.
+- It never renders raw HTML or styling. All visual output is delegated to presentational components.
 
 ### Presentational (display only)
 
@@ -143,11 +143,11 @@ Each feature page is composed of two layers:
 
 ```
 features/service-list/
-├── ServiceListPage.tsx        # Container — owns query, renders presentational
+├── ServiceListPage.tsx        # Container, owns query, renders presentational
 ├── ServiceListLoading.tsx     # Skeleton / spinner
 ├── ServiceListError.tsx       # Error card with retry
 ├── ServiceListEmpty.tsx       # Empty state
-└── ServiceCard.tsx            # Presentational — receives Service props
+└── ServiceCard.tsx            # Presentational, receives Service props
 ```
 
 Not every feature needs all four states as separate files, but the container must handle all four cases (loading, error, empty, success) regardless of how the presentational components are organised.
@@ -184,7 +184,7 @@ Typed result returned to caller
 The client exports typed functions that wrap `fetch` and add Zod validation:
 
 ```ts
-// Conceptual shape — not actual implementation
+// Conceptual shape, not actual implementation
 export async function getServices(params?: ServiceListParams): Promise<Service[]> {
   const response = await fetch(buildUrl('/api/v1/services', params));
   const json = await response.json();
@@ -202,12 +202,12 @@ export async function getServices(params?: ServiceListParams): Promise<Service[]
 1. Build the URL from path + params.
 2. Call `fetch` (or delegate to the mock handler when `VITE_USE_MOCK_API=true`).
 3. Check `response.ok`. If false, parse the body as `ApiError` and throw it.
-4. Parse the success body against the corresponding Zod schema. If the shape doesn't match, throw a `ZodError` — this catches mock/contract drift immediately in development.
+4. Parse the success body against the corresponding Zod schema. If the shape doesn't match, throw a `ZodError`. This catches mock/contract drift immediately in development.
 5. Return the validated, typed result.
 
 ### Mock toggle (`VITE_USE_MOCK_API`)
 
-When the env var is `true`, the client functions call the mock handler directly instead of `fetch`. The mock handler returns the same shaped data (with artificial delays to simulate latency). When `false`, a real HTTP call is made. Swapping to a real backend requires only changing the env var — no code changes.
+When the env var is `true`, the client functions call the mock handler directly instead of `fetch`. The mock handler returns the same shaped data (with artificial delays to simulate latency). When `false`, a real HTTP call is made. Swapping to a real backend requires only changing the env var, with no code changes.
 
 ### Service functions (`api/services/index.ts`)
 
@@ -241,10 +241,10 @@ React Query hooks in `hooks/` or co-located in `features/*/` call these service 
 ### Why no global store
 
 Every piece of state in this app is either:
-- **Server-derived** — React Query owns it.
-- **Form-scoped** — React Hook Form owns it.
-- **URL-derived** — React Router owns it.
-- **Ephemeral UI** — local `useState` owns it.
+- **Server-derived**: React Query owns it.
+- **Form-scoped**: React Hook Form owns it.
+- **URL-derived**: React Router owns it.
+- **Ephemeral UI**: local `useState` owns it.
 
 There is no state that needs to be shared across unrelated components without going through the URL or server. Adding a global store would create a fourth place to look for state with no corresponding benefit.
 
@@ -260,7 +260,7 @@ There is no state that needs to be shared across unrelated components without go
 | **Not found** | Resource doesn't exist | `404` | Show a "not found" message. For services, link back to the list. |
 | **Conflict** | Slot already booked or duplicate booking | `409` | Show a toast with the `error.message`. Prompt user to retry with different input. |
 | **Server error** | Unexpected backend failure | `500` | Show an error card with a "Retry" button. Use React Query's exponential backoff. |
-| **Schema mismatch** | Mock data or API response doesn't match Zod schema | N/A (thrown by `z.parse()`) | Caught in development only — surfaces as an `ErrorBoundary` crash or console error. Signals a contract drift bug. |
+| **Schema mismatch** | Mock data or API response doesn't match Zod schema | N/A (thrown by `z.parse()`) | Caught in development only. Surfaces as an `ErrorBoundary` crash or console error, and signals a contract drift bug. |
 | **Render error** | Unhandled exception in a component | N/A | Caught by the top-level `ErrorBoundary`. |
 
 ### The error flow
@@ -279,7 +279,7 @@ Mock/HTTP response
     ├─ response.ok === true, but z.parse() fails
     │   │
     │   ▼
-    │  Throws ZodError (contract drift — dev-only bug)
+    │  Throws ZodError (contract drift, dev-only bug)
     │
     ▼
 React Query catches the thrown error in queryFn/mutationFn
@@ -299,7 +299,7 @@ Container reads `isError` and `error`
 
 ### ErrorBoundary (last resort)
 
-The class-based `ErrorBoundary` in `src/components/ErrorBoundary.tsx` wraps the entire router. It catches **render-time exceptions** — errors that occur during React's rendering phase and cannot be caught by React Query or try/catch.
+The class-based `ErrorBoundary` in `src/components/ErrorBoundary.tsx` wraps the entire router. It catches **render-time exceptions**, which are errors that occur during React's rendering phase and cannot be caught by React Query or try/catch.
 
 It is **not** a substitute for per-feature error handling. Every feature must handle its own loading/error/empty states explicitly. The ErrorBoundary exists only for:
 - Unexpected bugs in component code (e.g. accessing `undefined.foo`).
@@ -311,7 +311,7 @@ Its current behaviour (alert + "Try again" button that resets state) is a scaffo
 
 ## 8. Loading / Empty / Error / Success States
 
-Every data-fetching feature page must handle exactly four states. The pattern is consistent across all features — no feature should invent its own state management.
+Every data-fetching feature page must handle exactly four states. The pattern is consistent across all features. No feature should invent its own state management.
 
 ### Representation
 
@@ -352,7 +352,7 @@ The booking form uses `useMutation` which provides its own status flags:
 | State | Flag | UI behaviour |
 |-------|------|--------------|
 | **Idle** | `isPending === false && !submitted` | Form is editable, submit button enabled |
-| **Submitting** | `isPending === true` | Submit button disabled, spinner shown |
+| **Submitting** | `isPending === true` | Submit button disabled, skeleton shown |
 | **Success** | `isSuccess === true` | Navigate to `/confirmation?bookingId={id}` |
 | **Error** | `isError === true` | Surface error below the form, re-enable submit |
 
@@ -381,13 +381,13 @@ This means each feature is a separate JavaScript chunk. The initial bundle conta
 A single `<Suspense>` boundary in `App.tsx` covers all lazy routes. While a chunk loads, the user sees a centered `Spinner` at full viewport height (`minH="60vh"`).
 
 **Behaviour:**
-- First visit to a route → brief spinner (typically <200ms on warm cache, 0.5–2s on cold).
+- First visit to a route shows a brief spinner (typically under 200ms on a warm cache, 0.5-2s on a cold one).
 - Subsequent visits → instant (chunk is cached by Vite/bundler).
-- No skeleton shimmer during code-split loading — just a spinner. This is intentional: the spinner represents *code loading*, not *data loading*. Data loading has its own skeleton inside the feature's `isLoading` state.
+- No skeleton shimmer during code-split loading. Only a spinner appears. This is intentional: the spinner represents *code loading*, not *data loading*. Data loading has its own skeleton inside the feature's `isLoading` state.
 
 ### What is NOT lazy-loaded
 
-- `App.tsx` (router + Suspense + ErrorBoundary) — must be in the main bundle.
-- `main.tsx` (providers) — must run immediately.
-- `src/components/ErrorBoundary.tsx` — must be synchronously available.
-- Shared components in `src/components/` — loaded eagerly with the main bundle (they're small).
+- `App.tsx` (router + Suspense + ErrorBoundary): must be in the main bundle.
+- `main.tsx` (providers): must run immediately.
+- `src/components/ErrorBoundary.tsx`: must be synchronously available.
+- Shared components in `src/components/`: loaded eagerly with the main bundle (they are small).

@@ -3,7 +3,7 @@
 This document records the key technical decisions made while building the
 customer-service booking system and, for each, **what** was chosen, **why** it
 was chosen, the **alternatives** considered, and why those alternatives were
-rejected. It reflects the actual choices in the codebase — it is not generic
+rejected. It reflects the actual choices in the codebase, not generic
 boilerplate.
 
 ---
@@ -20,7 +20,7 @@ Query hook (e.g. `useServices`, `useServiceDetails`, `useAvailability`,
 - The app's state is dominated by **server-derived data**: service lists,
   service details, availability slots, and bookings. A booking action must
   immediately be reflected elsewhere (creating a booking invalidates the
-  `bookings`, `services`, and `availability` caches — see
+  `bookings`, `services`, and `availability` caches; see
   `useCreateBooking.ts`). That cross-screen coherence is exactly what React
   Query's cache + cache invalidation solve for free.
 - The requirements called for loading / error / empty / success states on
@@ -34,9 +34,9 @@ Query hook (e.g. `useServices`, `useServiceDetails`, `useAvailability`,
 
 - **Raw `fetch` + `useState` per feature.** Would have meant hand-rolling a
   loading/error/data flag triplet in every component, plus manual request
-  deduplication and no shared cache across screens. The booking confirmation
-  flow alone invalidates three caches after a mutation — that coordination is
-  exactly what a hand-rolled approach gets wrong, so it was rejected.
+deduplication and no shared cache across screens. The booking confirmation
+   flow alone invalidates three caches after a mutation. That coordination is
+   exactly what a hand-rolled approach gets wrong, so it was rejected.
 - **A dedicated global client-state store (Redux/Zustand) for API state.**
   Rejected: there is no client state that must be shared across unrelated
   components without going through the URL or the server. All of the app's
@@ -57,7 +57,7 @@ for type-only use (`docs/architecture.md` §5).
 
 **Why:**
 
-- TypeScript types are **compile-time only** — they erase at build time and
+- TypeScript types are **compile-time only**. They are erased at build time and
   cannot protect against a mismatched mock or a real server returning a
   differently-shaped object. In a project with an in-memory mock that must
   faithfully mirror an API contract (see decision #3), a `z.parse()` is the
@@ -71,8 +71,8 @@ for type-only use (`docs/architecture.md` §5).
 **What happens on failure:** when `z.parse()` throws a `ZodError`,
 `normalizeError` in `api/client/index.ts:31` maps each issue path/message into
 an `ApiError` with code `INTERNAL_ERROR` and message
-`"Response did not match the expected schema."` — so a contract-drift bug
-surfaces as a normalised, logged error rather than a silent wrong render
+`"Response did not match the expected schema."` As a result, a contract-drift
+bug surfaces as a normalised, logged error instead of a silent wrong render
 (verified by `src/api/schemaValidation.test.ts`).
 
 **Alternatives considered and rejected:**
@@ -100,8 +100,8 @@ Mock mode is on by default via `.env` (`.env.example` documents it).
 
 - The project has no backend yet, but the architecture should be ready for
   one. Routing through an env toggle at the client boundary means features and
-  React Query hooks never care whether they're talking to a mock or a real API
-  — they always call `api/services` functions.
+  React Query hooks never care whether they're talking to a mock or a real API.
+  They always call `api/services` functions.
 - Because mock responses flow through the **same** `withErrorNormalization`
   and Zod-parse pipeline as real HTTP responses (`api/client/index.ts`), the
   mock exercises the production validation path instead of bypassing it. This
@@ -120,14 +120,14 @@ Mock mode is on by default via `.env` (`.env.example` documents it).
 
 **Alternatives considered and rejected:**
 
-- **No mock at all — build against a placeholder HTTP server.**
+- **Build against a placeholder HTTP server instead of a mock.**
   Rejected: it adds a second process and network stack to a phase whose goal
   is frontend UI + flows. An in-process mock keeps `npm run dev` a single
   command with no external dependencies.
 - **Hard-code mock data directly into feature components/hooks.**
   Rejected: it couples the UI to mock data shape, makes the mock/real swap
   invasive, and bypasses validation. Placing the mock behind the client keeps
-  the layering clean (`docs/architecture.md` §1) — features import only from
+  the layering clean (`docs/architecture.md` §1). Features import only from
   `api/services`, never from `api/mock` or `api/client`.
 - **A MSW (Mock Service Worker) approach.** Considered, but rejected for this
   phase: MSW is best when you need to intercept *real `fetch` calls* at the
@@ -148,13 +148,14 @@ Chakra `Controller` components, and errors surface through `FormErrorMessage`.
 
 - Validation rules already exist as the Zod `BookingRequestSchema` (the same
   schema the server validates against). Reusing it via `zodResolver` means the
-  form's rules can never drift from the API contract — one source of truth.
+  form's rules can never drift from the API contract, which keeps a single
+  source of truth.
 - RHF manages field registration, dirty/touched tracking, and re-render
   isolation, which manual `useState` per field does not: a keystroke in one
   input doesn't re-render the others.
 - The form needs "edit details" (returning to a previously filled form) after
-  a successful summary step — RHF's `defaultValues` makes pre-filling the
-  saved customer from `bookingFlow` state trivial.
+  a successful summary step. RHF's `defaultValues` makes it trivial to pre-fill
+  the saved customer from `bookingFlow` state.
 
 **Alternatives considered and rejected:**
 
@@ -215,16 +216,16 @@ set of actions (`SELECT_DATE`, `SELECT_SLOT`, `SET_CUSTOMER`, `GO_BACK`,
 1. **Per-feature data states (primary).** Every data error is a React Query
    `isError` state rendered inside its own feature via a dedicated
    `FeatureError` presentational component (`role="alert"`, auto-focused) with
-   a "Try again" retry — *not* an exception thrown to a global boundary.
+   a "Try again" retry. It is *not* an exception thrown to a global boundary.
    Loading/empty/error/success are handled explicitly in every container
    (`docs/architecture.md` §8).
-2. **One normalised error shape.** All of `api/client`'s error sources — the
+2. **One normalised error shape.** All of `api/client`'s error sources (the
    mock handler's rejection, an HTTP non-2xx, a Zod schema mismatch, or a
-   network failure — are funneled through `normalizeError` into a single
+   network failure) are funneled through `normalizeError` into a single
    `ApiError = { error: { code, message, details? } }`. Features never handle
    raw `Error`, `ZodError`, or `fetch` failures; they pattern-match on
-   `error.code` (e.g. `SLOT_UNAVAILABLE`, `DUPLICATE_BOOKING` →
-   "Time no longer available"; `VALIDATION_ERROR` → field errors).
+   `error.code` (for example `SLOT_UNAVAILABLE` and `DUPLICATE_BOOKING` map to
+   "Time no longer available", while `VALIDATION_ERROR` maps to field errors).
 3. **ErrorBoundary as a last resort only.** The class-based `ErrorBoundary`
    wraps the router and catches **render-time** exceptions that React Query
    and try/catch cannot (`docs/architecture.md` §7). It is explicitly not a
@@ -268,7 +269,8 @@ set of actions (`SELECT_DATE`, `SELECT_SLOT`, `SET_CUSTOMER`, `GO_BACK`,
 
 ## Document index
 
-- `docs/architecture.md` — code structure, layering, container/presentational
-  split, state and error-handling patterns.
-- `docs/api-contract.md` — the HTTP contract the client and mock implement.
-- `docs/setup.md` — prerequisites, install, env config, and running tests.
+- `docs/architecture.md`: code structure, layering, container/presentational
+  split, and state and error-handling patterns.
+- `docs/api-contract.md`: the HTTP contract the client and mock implement.
+- `docs/setup.md`: prerequisites, install, environment configuration, and
+  running tests.

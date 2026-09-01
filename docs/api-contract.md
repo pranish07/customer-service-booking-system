@@ -1,4 +1,4 @@
-# API Contract — Booking Module
+# API Contract: Booking Module
 
 This document defines the complete HTTP API contract for the customer-service booking system. All endpoints are versioned under `/api/v1/`. Every request and response body uses `application/json`.
 
@@ -41,7 +41,7 @@ The client uses **TanStack Query**. Each endpoint maps to a query or mutation:
 | `GET /services`              | Query          | `['services']`         | After successful booking    |
 | `GET /services/{id}`         | Query          | `['services', id]`     | After successful booking    |
 | `GET /services/{id}/availability` | Query    | `['availability', id, params]** | After successful booking |
-| `POST /bookings`             | Mutation       | —                      | Invalidates `['bookings']`, `['services']`, `['availability']` |
+| `POST /bookings`             | Mutation       | None                   | Invalidates `['bookings']`, `['services']`, `['availability']` |
 | `GET /bookings`              | Query          | `['bookings', params]` | After successful booking    |
 | `GET /bookings/{id}`         | Query          | `['bookings', id]`     | After successful booking    |
 
@@ -79,7 +79,7 @@ GET /api/v1/services
 | `category` | `string` | No       | Filter by service category (exact match)         |
 | `search`   | `string` | No       | Free-text search across name and description      |
 
-#### Response — `200 OK`
+#### Response: `200 OK`
 
 ```json
 [
@@ -134,7 +134,7 @@ GET /api/v1/services/{service_id}
 |--------------|----------|----------|------------------------|
 | `service_id` | `string` | Yes      | The service identifier |
 
-#### Response — `200 OK`
+#### Response: `200 OK`
 
 ```json
 {
@@ -178,7 +178,7 @@ GET /api/v1/services/{service_id}
 
 #### Error Responses
 
-**404 — Not Found**
+**404 Not Found**
 
 ```json
 {
@@ -188,6 +188,13 @@ GET /api/v1/services/{service_id}
   }
 }
 ```
+
+#### Client Loading / Empty / Error Behaviour
+
+- While loading, display a skeleton placeholder in the details area.
+- On `404`: Display an inline "service not found" error with a "Back to services" action.
+- On `500`: Display an inline error with a retry button.
+- The success state renders the full details (description, provider, location, rating, duration, price, availability summary) and a "Book" action.
 
 ---
 
@@ -215,7 +222,7 @@ GET /api/v1/services/{service_id}/availability
 
 If no date parameters are supplied, returns slots for the next 14 days.
 
-#### Response — `200 OK`
+#### Response: `200 OK`
 
 ```json
 [
@@ -251,7 +258,7 @@ Returns `200` with `[]` when the service exists but has no matching slots. This 
 
 #### Error Responses
 
-**404 — Service Not Found** (same shape as endpoint 2)
+**404 Service Not Found** (same shape as endpoint 2)
 
 #### Validation Errors (400)
 
@@ -297,12 +304,12 @@ POST /api/v1/bookings
 |-----------------|----------|----------|-------------------------------------------------------|
 | `serviceId`     | `string` | Yes      | Must be a valid, existing service ID                   |
 | `slotId`        | `string` | Yes      | Must be a valid, existing, **available** slot for the given service |
-| `customerName`  | `string` | Yes      | 1–100 characters, non-empty after trimming             |
+| `customerName`  | `string` | Yes      | 1-100 characters, non-empty after trimming             |
 | `customerEmail` | `string` | Yes      | Valid email format                                     |
-| `customerPhone` | `string` | No       | 1–30 characters if provided                            |
-| `address`       | `string` | Yes      | 1–200 characters, non-empty after trimming             |
+| `customerPhone` | `string` | No       | 1-30 characters if provided                            |
+| `address`       | `string` | Yes      | 1-200 characters, non-empty after trimming             |
 
-#### Response — `201 Created`
+#### Response: `201 Created`
 
 ```json
 {
@@ -341,9 +348,9 @@ POST /api/v1/bookings
 | Code  | When                                                                     |
 |-------|--------------------------------------------------------------------------|
 | `201` | Booking created successfully                                             |
-| `400` | Validation error (missing/invalid fields — see below)                    |
+| `400` | Validation error (missing or invalid fields; see below)                    |
 | `404` | Service or slot not found                                                |
-| `409` | Slot conflict — slot is already booked or no longer available             |
+| `409` | Slot conflict: the slot is already booked or no longer available             |
 | `500` | Unexpected server error                                                  |
 
 #### Validation Errors (400)
@@ -368,7 +375,7 @@ Returned when request body fails schema validation:
 
 #### Business Errors (409)
 
-**409 — Slot Unavailable**
+**409 Slot Unavailable**
 
 Returned when the requested slot is already booked or does not exist:
 
@@ -381,7 +388,7 @@ Returned when the requested slot is already booked or does not exist:
 }
 ```
 
-**409 — Duplicate Booking**
+**409 Duplicate Booking**
 
 Returned when the same customer (by email) already has a confirmed booking for this slot:
 
@@ -396,7 +403,7 @@ Returned when the same customer (by email) already has a confirmed booking for t
 
 #### Error Responses (404)
 
-**404 — Service Not Found**
+**404 Service Not Found**
 
 ```json
 {
@@ -407,7 +414,7 @@ Returned when the same customer (by email) already has a confirmed booking for t
 }
 ```
 
-**404 — Slot Not Found**
+**404 Slot Not Found**
 
 ```json
 {
@@ -420,7 +427,7 @@ Returned when the same customer (by email) already has a confirmed booking for t
 
 #### Client Loading Behaviour
 
-- On submit, the form enters a **submitting** state (button disabled, spinner shown).
+- On submit, the form enters a **submitting** state (button disabled, skeleton shown while the request is pending).
 - On `201`: Invalidate `['bookings']`, `['services']`, and `['availability']` query caches. Navigate to the confirmation page.
 - On `400`: Surface field-level errors in the form. Re-enable submit button.
 - On `404`: Surface a toast notification. Re-enable submit button.
@@ -443,7 +450,7 @@ GET /api/v1/bookings
 |-----------|----------|----------|------------------------------------------------|
 | `email`   | `string` | Yes      | Customer email address (exact match, case-insensitive) |
 
-#### Response — `200 OK`
+#### Response: `200 OK`
 
 ```json
 [
@@ -516,7 +523,7 @@ GET /api/v1/bookings/{booking_id}
 |--------------|----------|----------|------------------------|
 | `booking_id` | `string` | Yes      | The booking identifier |
 
-#### Response — `200 OK`
+#### Response: `200 OK`
 
 ```json
 {
@@ -547,7 +554,7 @@ Same shape as the booking object in endpoints 4 and 5.
 
 #### Error Responses
 
-**404 — Not Found**
+**404 Not Found**
 
 ```json
 {
