@@ -128,6 +128,10 @@ function generateAvailability(): AvailabilitySlot[] {
         const end = new Date(start);
         end.setMinutes(end.getMinutes() + service.durationMinutes);
 
+        // Skip slots that have already started. The mock never exposes past
+        // times, mirroring what a real availability endpoint would return.
+        if (start.getTime() <= now.getTime()) continue;
+
         slots.push({
           id: id("slot", nextSlotId++),
           serviceId: service.id,
@@ -260,6 +264,10 @@ export async function getAvailability(
     });
   }
 
+  // Never return slots whose start time has passed, so the grid cannot offer
+  // past times even on a page left open long enough for a slot to expire.
+  slots = slots.filter((s) => new Date(s.startTime).getTime() > Date.now());
+
   return slots;
 }
 
@@ -323,6 +331,16 @@ export async function createBooking(
     throw makeError(
       "SLOT_NOT_FOUND",
       `No slot found with id ${request.slotId} for service ${request.serviceId}.`,
+    );
+  }
+
+  // Expiry check: a slot whose start time has already passed cannot be booked,
+  // even if it is still marked available. This rejects stale slot choices the
+  // same way a real backend would.
+  if (new Date(slot.startTime).getTime() <= Date.now()) {
+    throw makeError(
+      "SLOT_UNAVAILABLE",
+      "The selected time slot is no longer available.",
     );
   }
 

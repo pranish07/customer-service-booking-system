@@ -35,17 +35,18 @@ function formatIso(date: Date): string {
   ).padStart(2, '0')}`
 }
 
-// The mock only generates slots on weekdays within the next 14 days. Find the
-// first such weekday so the test reliably has a slot to select.
+// The mock only generates slots on weekdays within the next 14 days, and it
+// never returns slots whose start time has already passed. Pick the first
+// weekday after today so the test reliably has a slot to select.
 function nextWeekday(): string {
   const now = new Date()
-  for (let i = 0; i < 14; i++) {
+  for (let i = 1; i < 14; i++) {
     const d = new Date(now)
     d.setDate(d.getDate() + i)
     const day = d.getDay()
     if (day !== 0 && day !== 6) return formatIso(d)
   }
-  return formatIso(new Date())
+  return formatIso(new Date(now.setDate(now.getDate() + 1)))
 }
 
 // Set the native date input via fireEvent (user-event types into date inputs

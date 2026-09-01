@@ -56,6 +56,8 @@ The mock is **in-process**. There is no separate server to start. When
   data (`servicesDb`, availability slots, bookings).
 - Artificial delays are added to simulate network latency, which is why the
   Vitest `testTimeout` is generous (20s).
+- Availability slots are generated weekdays-only for the next 14 days, and
+  slots whose start time has already passed are never returned.
 - Mock responses still flow through the **real validation pipeline** (Zod
   schema parsing + error normalization), so the mock exercises production
   code paths rather than bypassing them.

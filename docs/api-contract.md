@@ -220,7 +220,7 @@ GET /api/v1/services/{service_id}/availability
 | `from`    | `string` | No       | Start of range as ISO 8601 datetime. Requires `to`.                   |
 | `to`      | `string` | No       | End of range as ISO 8601 datetime. Requires `from`.                   |
 
-If no date parameters are supplied, returns slots for the next 14 days.
+If no date parameters are supplied, returns slots for the next 14 days. Slots whose start time has already passed are never returned.
 
 #### Response: `200 OK`
 
