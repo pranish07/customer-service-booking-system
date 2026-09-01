@@ -102,7 +102,7 @@ GET /api/v1/services
 | `name`             | `string`          | Display name                                   |
 | `description`      | `string`          | Short description (one sentence)               |
 | `durationMinutes`  | `number`          | Session length in minutes (positive integer)   |
-| `price`            | `number`          | Price in minor currency units (cents)          |
+| `price`            | `number`          | Price in minor currency units (USD)          |
 | `currency`         | `string`          | ISO 4217 currency code                         |
 | `category`         | `string`          | Category label for filtering                   |
 | `imageUrl`         | `string \| null`  | Optional hero image URL                        |
@@ -160,7 +160,7 @@ GET /api/v1/services/{service_id}
 | `description`      | `string`          | Short description                                   |
 | `longDescription`  | `string`          | Full marketing / details text                       |
 | `durationMinutes`  | `number`          | Session length in minutes                           |
-| `price`            | `number`          | Price in minor currency units (cents)               |
+| `price`            | `number`          | Price in minor currency units (USD)               |
 | `currency`         | `string`          | ISO 4217 currency code                              |
 | `category`         | `string`          | Category label                                      |
 | `imageUrl`         | `string \| null`  | Optional hero image URL                             |
