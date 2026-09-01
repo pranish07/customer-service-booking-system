@@ -43,7 +43,7 @@ export function ServiceDetailsContent({
   const price = formatPrice(service.currency, service.price)
 
   return (
-    <VStack align="stretch" spacing={6} maxW="860px" mx="auto">
+    <VStack align="stretch" spacing={6} maxW="860px" mx="auto" py={10}>
       <Box alignSelf="flex-start">
         <Button variant="ghost" size="sm" as={RouterLink} to="/" leftIcon={<BackIcon />}>
           Back to services
