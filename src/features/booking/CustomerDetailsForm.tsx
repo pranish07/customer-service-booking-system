@@ -9,6 +9,7 @@ import {
   Input,
   VStack,
 } from '@chakra-ui/react'
+import { BackIcon } from '@/components/BackIcon'
 import {
   customerDetailsSchema,
   type CustomerDetailsFormValues,
@@ -96,7 +97,7 @@ export function CustomerDetailsForm({
           )}
         />
         <HStack spacing={3} pt={2}>
-          <Button variant="ghost" onClick={onBack}>
+          <Button variant="ghost" onClick={onBack} leftIcon={<BackIcon />}>
             Back
           </Button>
           <Button type="submit" colorScheme="green">

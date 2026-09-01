@@ -8,11 +8,11 @@ import {
   HStack,
   List,
   ListItem,
-  Spinner,
   Text,
   VStack,
 } from '@chakra-ui/react'
 import { useFocusOnMount } from '@/hooks'
+import { BookingsListLoading } from './BookingsListLoading'
 import type { Booking } from '@/types'
 
 interface BookingsListProps {
@@ -45,11 +45,7 @@ export function BookingsList({
   const errorRef = useFocusOnMount<HTMLDivElement>()
 
   if (isLoading) {
-    return (
-      <Flex justify="center" py={10} role="status" aria-live="polite">
-        <Spinner aria-label="Loading your bookings" />
-      </Flex>
-    )
+    return <BookingsListLoading />
   }
 
   if (isError) {

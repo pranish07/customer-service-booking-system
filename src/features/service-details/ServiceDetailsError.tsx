@@ -7,6 +7,7 @@ import {
   VStack,
 } from '@chakra-ui/react'
 import { Link } from 'react-router-dom'
+import { BackIcon } from '@/components/BackIcon'
 import { useFocusOnMount } from '@/hooks'
 import type { ApiError } from '@/types'
 
@@ -60,7 +61,7 @@ export function ServiceDetailsError({ error, onRetry }: ServiceDetailsErrorProps
             Try again
           </Button>
         )}
-        <Button as={Link} to="/" variant="outline">
+        <Button as={Link} to="/" variant="outline" leftIcon={<BackIcon />}>
           Back to services
         </Button>
       </VStack>

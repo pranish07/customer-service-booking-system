@@ -1,4 +1,5 @@
 import { Button, Divider, Heading, HStack, Text, VStack } from '@chakra-ui/react'
+import { BackIcon } from '@/components/BackIcon'
 import type { ReactNode } from 'react'
 import type { Booking } from '@/types'
 
@@ -34,8 +35,8 @@ export function BookingDetails({ booking, onBack }: BookingDetailsProps) {
     <VStack align="stretch" spacing={4} maxW="520px">
       <HStack justify="space-between">
         <Heading size="md">Booking details</Heading>
-        <Button variant="ghost" size="sm" onClick={onBack}>
-          ← Back to list
+        <Button variant="ghost" size="sm" onClick={onBack} leftIcon={<BackIcon />}>
+          Back to list
         </Button>
       </HStack>
 

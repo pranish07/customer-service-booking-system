@@ -4,10 +4,11 @@ import {
   Heading,
   HStack,
   SimpleGrid,
-  Spinner,
   Text,
   VStack,
 } from '@chakra-ui/react'
+import { BackIcon } from '@/components/BackIcon'
+import { BookingSlotStepLoading } from './BookingSlotStepLoading'
 import type { AvailabilitySlot } from '@/types'
 
 function formatTime(iso: string): string {
@@ -45,16 +46,14 @@ export function BookingSlotStep({
     <VStack align="stretch" spacing={4} maxW="640px">
       <HStack justify="space-between">
         <Heading size="md">Available times</Heading>
-        <Button variant="ghost" size="sm" onClick={onBack}>
+        <Button variant="ghost" size="sm" onClick={onBack} leftIcon={<BackIcon />}>
           Change date
         </Button>
       </HStack>
       <Text color="gray.600">For {date}</Text>
 
       {isLoading ? (
-        <Box textAlign="center" py={8} role="status" aria-live="polite">
-          <Spinner aria-label="Loading available times" />
-        </Box>
+        <BookingSlotStepLoading />
       ) : isError ? (
         <Box textAlign="center" py={8} role="alert">
           <Text color="gray.600">
@@ -70,7 +69,7 @@ export function BookingSlotStep({
           <Text fontSize="sm" color="gray.500">
             Please choose a different date.
           </Text>
-          <Button variant="outline" size="sm" mt={4} onClick={onBack}>
+          <Button variant="outline" size="sm" mt={4} onClick={onBack} leftIcon={<BackIcon />}>
             Change date
           </Button>
         </Box>

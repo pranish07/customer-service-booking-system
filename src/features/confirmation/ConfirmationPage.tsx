@@ -1,8 +1,10 @@
-import { Button, Container as ChakraContainer, Heading, HStack, Text, VStack } from '@chakra-ui/react'
+import { Box, Button, Container as ChakraContainer, Heading, Text, VStack } from '@chakra-ui/react'
 import { Link as RouterLink, useLocation, useSearchParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
+import { BackIcon } from '@/components/BackIcon'
 import { getBookingById } from '@/api/services'
 import { ConfirmationCard } from './ConfirmationCard'
+import { ConfirmationLoading } from './ConfirmationLoading'
 import type { Booking } from '@/types'
 
 interface ConfirmationLocationState {
@@ -34,15 +36,15 @@ export default function ConfirmationPage() {
   return (
     <ChakraContainer maxW="760px" py={10}>
       <VStack align="stretch" spacing={6}>
-        <HStack justify="space-between" align="center">
-          <Heading size="lg">Booking confirmation</Heading>
-          <Button variant="ghost" size="sm" as={RouterLink} to="/">
-            ← Back to services
+        <Box alignSelf="flex-start">
+          <Button variant="ghost" size="sm" as={RouterLink} to="/" leftIcon={<BackIcon />}>
+            Back to services
           </Button>
-        </HStack>
+        </Box>
+        <Heading size="lg">Booking confirmation</Heading>
 
         {isLoading && !stateBooking ? (
-          <Text color="gray.500">Loading confirmation…</Text>
+          <ConfirmationLoading />
         ) : isError && !stateBooking ? (
           <VStack align="stretch" spacing={4}>
             <Text as="span" color="gray.500">

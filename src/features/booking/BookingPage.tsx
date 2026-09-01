@@ -1,7 +1,8 @@
 import { useMemo, useReducer, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { Link as RouterLink } from 'react-router-dom'
-import { Button, Container as ChakraContainer, Heading, HStack, VStack } from '@chakra-ui/react'
+import { Box, Button, Container as ChakraContainer, Heading, VStack } from '@chakra-ui/react'
+import { BackIcon } from '@/components/BackIcon'
 import { bookingFlowReducer, type CustomerDetails } from './bookingFlow'
 import { useBookingService, useAvailability, getSelectableDates } from './useAvailability'
 import { useCreateBooking } from './useCreateBooking'
@@ -190,12 +191,12 @@ export default function BookingPage() {
   return (
     <ChakraContainer maxW="860px" py={8}>
       <VStack align="stretch" spacing={6}>
-        <HStack justify="space-between" align="center">
-          <Heading size="lg">Book a service</Heading>
-          <Button variant="ghost" size="sm" as={RouterLink} to={`/services/${serviceId}`}>
-            ← Back to details
+        <Box alignSelf="flex-start">
+          <Button variant="ghost" size="sm" as={RouterLink} to={`/services/${serviceId}`} leftIcon={<BackIcon />}>
+            Back to details
           </Button>
-        </HStack>
+        </Box>
+        <Heading size="lg">Book a service</Heading>
         <BookingStepper current={state.step} />
         {content}
       </VStack>

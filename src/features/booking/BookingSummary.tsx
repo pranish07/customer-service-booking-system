@@ -12,6 +12,7 @@ import {
   Text,
   VStack,
 } from '@chakra-ui/react'
+import { BackIcon } from '@/components/BackIcon'
 import type { ServiceDetails, AvailabilitySlot } from '@/types'
 import type { CustomerDetails } from './bookingFlow'
 
@@ -108,7 +109,7 @@ export function BookingSummary({
       )}
 
       <HStack spacing={3}>
-        <Button variant="ghost" onClick={onBack} isDisabled={isConfirming}>
+        <Button variant="ghost" onClick={onBack} isDisabled={isConfirming} leftIcon={<BackIcon />}>
           Back
         </Button>
         <Button

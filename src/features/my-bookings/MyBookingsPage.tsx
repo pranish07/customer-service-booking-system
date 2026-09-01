@@ -4,19 +4,20 @@ import {
   AlertDescription,
   AlertIcon,
   AlertTitle,
+  Box,
   Button,
   Container as ChakraContainer,
-  Flex,
   Heading,
   HStack,
-  Spinner,
   VStack,
 } from '@chakra-ui/react'
 import { Link as RouterLink } from 'react-router-dom'
+import { BackIcon } from '@/components/BackIcon'
 import { useFocusOnMount } from '@/hooks'
 import { MyBookingsEmailPrompt } from './MyBookingsEmailPrompt'
 import { BookingsList } from './BookingsList'
 import { BookingDetails } from './BookingDetails'
+import { BookingDetailsLoading } from './BookingDetailsLoading'
 import { useBookings, useBookingById } from './useBookings'
 
 /**
@@ -36,20 +37,18 @@ export default function MyBookingsPage() {
   return (
     <ChakraContainer maxW="720px" py={10}>
       <VStack align="stretch" spacing={6}>
-        <HStack justify="space-between" align="center">
-          <Heading size="lg">My bookings</Heading>
-          <Button variant="ghost" size="sm" as={RouterLink} to="/">
-            ← Back to services
+        <Box alignSelf="flex-start">
+          <Button variant="ghost" size="sm" as={RouterLink} to="/" leftIcon={<BackIcon />}>
+            Back to services
           </Button>
-        </HStack>
+        </Box>
+        <Heading size="lg">My bookings</Heading>
 
         {email === null ? (
           <MyBookingsEmailPrompt onSubmit={setEmail} />
         ) : selectedId !== null ? (
           detail.isLoading ? (
-            <Flex justify="center" py={10} role="status" aria-live="polite">
-              <Spinner aria-label="Loading booking details" />
-            </Flex>
+            <BookingDetailsLoading />
           ) : detail.isError ? (
             <Alert
               ref={detailErrorRef}
@@ -86,8 +85,9 @@ export default function MyBookingsPage() {
               size="sm"
               alignSelf="flex-start"
               onClick={() => setEmail(null)}
+              leftIcon={<BackIcon />}
             >
-              ← Change email
+              Change email
             </Button>
             <BookingsList
               isLoading={bookings.isLoading}
