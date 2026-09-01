@@ -8,6 +8,7 @@ import {
   Heading,
   HStack,
   Image,
+  Skeleton,
   Stat,
   StatLabel,
   StatNumber,
@@ -21,6 +22,7 @@ import type { ServiceDetails } from '@/types'
 interface ServiceDetailsContentProps {
   service: ServiceDetails
   availabilitySummary: string
+  availabilityLoading: boolean
   onBook: () => void
 }
 
@@ -35,6 +37,7 @@ function formatPrice(currency: string, minorUnits: number): string {
 export function ServiceDetailsContent({
   service,
   availabilitySummary,
+  availabilityLoading,
   onBook,
 }: ServiceDetailsContentProps) {
   const price = formatPrice(service.currency, service.price)
@@ -106,9 +109,13 @@ export function ServiceDetailsContent({
           </Text>
 
           <HStack justify="space-between" mt={6} flexWrap="wrap" spacing={4}>
-            <Text fontSize="sm" color="gray.600">
-              {availabilitySummary}
-            </Text>
+            {availabilityLoading ? (
+              <Skeleton height="16px" width="220px" role="status" aria-live="polite" />
+            ) : (
+              <Text fontSize="sm" color="gray.600">
+                {availabilitySummary}
+              </Text>
+            )}
             <Button colorScheme="green" size="lg" onClick={onBook}>
               Book this service
             </Button>

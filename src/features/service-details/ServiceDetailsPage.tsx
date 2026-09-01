@@ -47,6 +47,7 @@ export default function ServiceDetailsPage() {
     <ServiceDetailsContent
       service={service}
       availabilitySummary={availabilitySummary}
+      availabilityLoading={availability.isLoading}
       onBook={handleBook}
     />
   )

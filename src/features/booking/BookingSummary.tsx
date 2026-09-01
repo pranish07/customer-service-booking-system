@@ -9,6 +9,7 @@ import {
   HStack,
   List,
   ListItem,
+  Skeleton,
   Text,
   VStack,
 } from '@chakra-ui/react'
@@ -112,14 +113,13 @@ export function BookingSummary({
         <Button variant="ghost" onClick={onBack} isDisabled={isConfirming} leftIcon={<BackIcon />}>
           Back
         </Button>
-        <Button
-          colorScheme="green"
-          onClick={onConfirm}
-          isLoading={isConfirming}
-          loadingText="Confirming…"
-        >
-          Confirm booking
-        </Button>
+        {isConfirming ? (
+          <Skeleton height="40px" width="150px" borderRadius="md" role="status" aria-live="polite" />
+        ) : (
+          <Button colorScheme="green" onClick={onConfirm}>
+            Confirm booking
+          </Button>
+        )}
       </HStack>
     </VStack>
   )

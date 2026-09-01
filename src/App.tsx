@@ -1,8 +1,8 @@
 import { lazy, Suspense } from 'react'
 import { Routes, Route } from 'react-router-dom'
-import { Center, Spinner } from '@chakra-ui/react'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 import { DevErrorSimulator } from '@/components/DevErrorSimulator'
+import { PageSkeleton } from '@/components/PageSkeleton'
 
 const ServiceListPage = lazy(() => import('@/features/service-list/ServiceListPage'))
 const ServiceDetailsPage = lazy(() => import('@/features/service-details/ServiceDetailsPage'))
@@ -14,11 +14,7 @@ function RouteFallback() {
   // This is the code-split (Suspense) loading state — distinct from each
   // feature's own data-loading skeleton. A labelled, live region ensures the
   // "code is loading" state is announced rather than a blank flash.
-  return (
-    <Center minH="60vh" role="status" aria-live="polite">
-      <Spinner size="xl" aria-label="Loading page…" />
-    </Center>
-  )
+  return <PageSkeleton />
 }
 
 /**

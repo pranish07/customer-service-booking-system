@@ -4,6 +4,7 @@ import {
   Heading,
   HStack,
   SimpleGrid,
+  Skeleton,
   Text,
   VStack,
 } from '@chakra-ui/react'
@@ -79,17 +80,13 @@ export function BookingSlotStep({
               freshly-returned (pre-refetch) slots, so surface that we're checking
               for a closer-to-current view rather than silently leaving stale data. */}
           {isRefreshing && (
-            <Text
-              as="span"
-              fontSize="sm"
-              color="gray.500"
+            <Skeleton
+              height="14px"
+              width="150px"
+              mb={3}
               role="status"
               aria-live="polite"
-              mb={3}
-              display="block"
-            >
-              Checking availability…
-            </Text>
+            />
           )}
           <SimpleGrid columns={{ base: 2, sm: 3 }} spacing={3}>
             {slots.map((slot) => {
