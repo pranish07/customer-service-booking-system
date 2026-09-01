@@ -46,6 +46,6 @@ configuration, and test instructions.
 
 ## Demo video
 
-<!-- TODO: DEMO VIDEO. Replace this placeholder with the final demo video link when available. -->
+[Watch the demo](https://jam.dev/c/9c835c8b-485e-4851-9cba-aea91e92780f)
 
 ---
