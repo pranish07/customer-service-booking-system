@@ -12,7 +12,7 @@ import {
   VStack,
 } from '@chakra-ui/react'
 import { Link as RouterLink } from 'react-router-dom'
-import { BackIcon } from '@/components/BackIcon'
+import { BackIcon, MyBookingsPageSkeleton } from '@/components'
 import { useFocusOnMount } from '@/hooks'
 import { MyBookingsEmailPrompt } from './MyBookingsEmailPrompt'
 import { BookingsList } from './BookingsList'
@@ -35,10 +35,16 @@ export default function MyBookingsPage() {
   const detailErrorRef = useFocusOnMount<HTMLDivElement>()
 
   return (
-    <ChakraContainer maxW="720px" py={10}>
+    <ChakraContainer maxW="860px" py={8}>
       <VStack align="stretch" spacing={6}>
         <Box alignSelf="flex-start">
-          <Button variant="ghost" size="sm" as={RouterLink} to="/" leftIcon={<BackIcon />}>
+          <Button
+            variant="ghost"
+            size="sm"
+            as={RouterLink}
+            to="/"
+            leftIcon={<BackIcon />}
+          >
             Back to services
           </Button>
         </Box>
@@ -46,6 +52,8 @@ export default function MyBookingsPage() {
 
         {email === null ? (
           <MyBookingsEmailPrompt onSubmit={setEmail} />
+        ) : bookings.isLoading ? (
+          <MyBookingsPageSkeleton />
         ) : selectedId !== null ? (
           detail.isLoading ? (
             <BookingDetailsLoading />
@@ -68,15 +76,22 @@ export default function MyBookingsPage() {
                 <AlertTitle>Could not load booking</AlertTitle>
               </HStack>
               <AlertDescription mb={3}>
-                We could not load the details for this booking. Please try again in a
-                moment.
+                We could not load the details for this booking. Please try again
+                in a moment.
               </AlertDescription>
-              <Button colorScheme="red" size="sm" onClick={() => detail.refetch()}>
+              <Button
+                colorScheme="red"
+                size="sm"
+                onClick={() => detail.refetch()}
+              >
                 Try again
               </Button>
             </Alert>
           ) : detail.data ? (
-            <BookingDetails booking={detail.data} onBack={() => setSelectedId(null)} />
+            <BookingDetails
+              booking={detail.data}
+              onBack={() => setSelectedId(null)}
+            />
           ) : null
         ) : (
           <>

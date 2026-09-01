@@ -170,6 +170,7 @@ export function ConfirmationPageSkeleton() {
 
 export function MyBookingsPageSkeleton() {
   return (
+    <ChakraContainer maxW="860px" py={8}>
     <VStack
       align="stretch"
       spacing={3}
@@ -194,6 +195,7 @@ export function MyBookingsPageSkeleton() {
         </Box>
       ))}
     </VStack>
+    </ChakraContainer>
   )
 }
 

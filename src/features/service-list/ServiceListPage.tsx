@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { Box, HStack, Heading, VStack } from '@chakra-ui/react'
+import { Link as RouterLink, useNavigate } from 'react-router-dom'
+import { Box, Button, HStack, Heading, VStack } from '@chakra-ui/react'
 import { ServiceListPageSkeleton } from '@/components'
 import { useServices } from './useServices'
 import { SearchBar } from './SearchBar'
@@ -49,7 +49,18 @@ export default function ServiceListPage() {
 
   return (
     <VStack align="stretch" spacing={6} p={6} maxW="1200px" mx="auto">
-      <Heading size="lg">Services</Heading>
+      <HStack justify="space-between" flexWrap="wrap" spacing={4}>
+        <Heading size="lg">Services</Heading>
+        <Button
+          as={RouterLink}
+          to="/my-bookings"
+          variant="outline"
+          colorScheme="green"
+          size="sm"
+        >
+          My bookings
+        </Button>
+      </HStack>
       <HStack spacing={4} flexWrap="wrap">
         <Box flex="1" minW="240px">
           <SearchBar value={search} onChange={setSearch} />

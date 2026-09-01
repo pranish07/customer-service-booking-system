@@ -45,7 +45,7 @@ export default function ConfirmationPage() {
   const booking = stateBooking ?? data
 
   return (
-    <ChakraContainer maxW="760px" py={10}>
+    <ChakraContainer maxW="860px" py={8}>
       <VStack align="stretch" spacing={6}>
         <Box alignSelf="flex-start">
           <Button
