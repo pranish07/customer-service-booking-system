@@ -1,7 +1,11 @@
 import { useParams, useNavigate } from 'react-router-dom'
-import { useServiceDetails, useServiceAvailability, summarizeAvailability } from './useServiceDetails'
+import { ServiceDetailsPageSkeleton } from '@/components'
+import {
+  useServiceDetails,
+  useServiceAvailability,
+  summarizeAvailability,
+} from './useServiceDetails'
 import { ServiceDetailsContent } from './ServiceDetailsContent'
-import { ServiceDetailsLoading } from './ServiceDetailsLoading'
 import { ServiceDetailsError } from './ServiceDetailsError'
 
 /**
@@ -16,7 +20,7 @@ export default function ServiceDetailsPage() {
   const details = useServiceDetails(serviceId)
   const availability = useServiceAvailability(serviceId)
 
-  if (details.isLoading) return <ServiceDetailsLoading />
+  if (details.isLoading) return <ServiceDetailsPageSkeleton />
   if (details.isError) {
     return (
       <ServiceDetailsError

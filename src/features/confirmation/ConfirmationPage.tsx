@@ -1,10 +1,20 @@
-import { Box, Button, Container as ChakraContainer, Heading, Text, VStack } from '@chakra-ui/react'
-import { Link as RouterLink, useLocation, useSearchParams } from 'react-router-dom'
+import {
+  Box,
+  Button,
+  Container as ChakraContainer,
+  Heading,
+  Text,
+  VStack,
+} from '@chakra-ui/react'
+import {
+  Link as RouterLink,
+  useLocation,
+  useSearchParams,
+} from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
-import { BackIcon } from '@/components/BackIcon'
+import { BackIcon, ConfirmationPageSkeleton } from '@/components'
 import { getBookingById } from '@/api/services'
 import { ConfirmationCard } from './ConfirmationCard'
-import { ConfirmationLoading } from './ConfirmationLoading'
 import type { Booking } from '@/types'
 
 interface ConfirmationLocationState {
@@ -23,7 +33,8 @@ export default function ConfirmationPage() {
   const [searchParams] = useSearchParams()
   const location = useLocation()
   const bookingId = searchParams.get('bookingId')
-  const stateBooking = (location.state as ConfirmationLocationState | null)?.booking
+  const stateBooking = (location.state as ConfirmationLocationState | null)
+    ?.booking
 
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ['bookings', bookingId],
@@ -37,20 +48,30 @@ export default function ConfirmationPage() {
     <ChakraContainer maxW="760px" py={10}>
       <VStack align="stretch" spacing={6}>
         <Box alignSelf="flex-start">
-          <Button variant="ghost" size="sm" as={RouterLink} to="/" leftIcon={<BackIcon />}>
+          <Button
+            variant="ghost"
+            size="sm"
+            as={RouterLink}
+            to="/"
+            leftIcon={<BackIcon />}
+          >
             Back to services
           </Button>
         </Box>
         <Heading size="lg">Booking confirmation</Heading>
 
         {isLoading && !stateBooking ? (
-          <ConfirmationLoading />
+          <ConfirmationPageSkeleton />
         ) : isError && !stateBooking ? (
           <VStack align="stretch" spacing={4}>
             <Text as="span" color="gray.500">
               We could not load this booking. It may have been removed.
             </Text>
-            <Button colorScheme="red" onClick={() => refetch()} alignSelf="flex-start">
+            <Button
+              colorScheme="red"
+              onClick={() => refetch()}
+              alignSelf="flex-start"
+            >
               Try again
             </Button>
           </VStack>

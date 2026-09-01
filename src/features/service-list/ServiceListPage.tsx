@@ -1,11 +1,11 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Box, HStack, Heading, VStack } from '@chakra-ui/react'
+import { ServiceListPageSkeleton } from '@/components'
 import { useServices } from './useServices'
 import { SearchBar } from './SearchBar'
 import { CategoryFilter, ALL_CATEGORIES } from './CategoryFilter'
 import { ServiceListGrid } from './ServiceListGrid'
-import { ServiceListLoading } from './ServiceListLoading'
 import { ServiceListError } from './ServiceListError'
 import { ServiceListEmpty } from './ServiceListEmpty'
 
@@ -35,8 +35,9 @@ export default function ServiceListPage() {
     setCategory(DEFAULT_CATEGORY)
   }
 
-  if (isLoading) return <ServiceListLoading />
-  if (isError) return <ServiceListError error={error} onRetry={() => refetch()} />
+  if (isLoading) return <ServiceListPageSkeleton />
+  if (isError)
+    return <ServiceListError error={error} onRetry={() => refetch()} />
   if (data.length === 0) {
     return (
       <ServiceListEmpty

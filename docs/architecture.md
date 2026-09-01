@@ -49,20 +49,29 @@ src/
 │       └── index.ts          # Feature-specific API functions
 │
 ├── components/
-│   ├── index.ts              # Barrel for shared, feature-agnostic components
+│   ├── index.ts              # Barrel: shared, feature-agnostic components
+│   ├── BackIcon.tsx          # Chakra icon (createIcon)
+│   ├── CheckCircleIcon.tsx   # Chakra icon (createIcon)
+│   ├── DevErrorSimulator.tsx # Dev-only trigger for the error boundary
 │   ├── ErrorBoundary.tsx     # Class component, last-resort render-error catch
-│   └── PlaceholderPage.tsx   # Temporary scaffold (removed when features land)
+│   └── page-skeletons.tsx    # Route-aware page skeletons (shared + Suspense fallback)
 │
 ├── features/
+│   ├── index.ts              # Aggregate barrel of the five feature pages
 │   ├── service-list/
+│   │   ├── index.ts          # Re-exports ServiceListPage
 │   │   └── ServiceListPage.tsx       # Container + presentational (per feature)
 │   ├── service-details/
+│   │   ├── index.ts          # Re-exports ServiceDetailsPage
 │   │   └── ServiceDetailsPage.tsx
 │   ├── booking/
+│   │   ├── index.ts          # Re-exports BookingPage
 │   │   └── BookingPage.tsx
 │   ├── confirmation/
+│   │   ├── index.ts          # Re-exports ConfirmationPage
 │   │   └── ConfirmationPage.tsx
 │   └── my-bookings/
+│       ├── index.ts          # Re-exports MyBookingsPage
 │       └── MyBookingsPage.tsx
 │
 ├── hooks/
@@ -78,18 +87,31 @@ src/
 └── main.tsx                  # Providers: Chakra, React Query, BrowserRouter
 ```
 
+**Barrels and lazy loading.** Each folder exposes an `index.ts` barrel for
+tidy, feature-agnostic imports. The router does **not** import through the
+`features/index.ts` aggregate; it loads each page directly by file path via
+`React.lazy()` (see §9) so Vite keeps **one chunk per feature**. The per-feature
+barrels re-export that feature's page as its public surface, and the
+`features/index.ts` aggregate collects all five pages for convenience. Do not
+reroute the `lazy()` imports through an aggregate, as that can collapse all
+features into a single chunk. Feature-to-feature _component/hook/state_ imports
+remain disallowed regardless (see §3); the barrels re-export pages, which
+cross-feature routing already reaches via URL navigation.
+
 ### Responsibility per folder
 
-| Folder | Owns | Never contains |
-|--------|------|----------------|
-| `api/client/` | HTTP transport, response validation, mock/real dispatch | Business logic, UI code |
-| `api/mock/` | In-memory data, artificial delays | Real HTTP calls |
-| `api/services/` | One function per endpoint, typed request/response | Validation logic, UI |
-| `api/index.ts` | Public re-exports from `api/services/` | Direct client/mock imports |
-| `components/` | Reusable, feature-agnostic UI primitives | Feature-specific logic, data fetching |
-| `features/*/` | One feature per folder: container + presentational components | Imports from other features |
-| `hooks/` | Shared React Query hooks, form helpers | Feature-specific hooks (stay in `features/`) |
-| `types/` | Shared domain interfaces and type aliases | Runtime logic, Zod schemas |
+| Folder                | Owns                                                          | Never contains                                   |
+| --------------------- | ------------------------------------------------------------- | ------------------------------------------------ |
+| `api/client/`         | HTTP transport, response validation, mock/real dispatch       | Business logic, UI code                          |
+| `api/mock/`           | In-memory data, artificial delays                             | Real HTTP calls                                  |
+| `api/services/`       | One function per endpoint, typed request/response             | Validation logic, UI                             |
+| `api/index.ts`        | Public re-exports from `api/services/`                        | Direct client/mock imports                       |
+| `components/`         | Reusable, feature-agnostic UI primitives                      | Feature-specific logic, data fetching            |
+| `features/*/index.ts` | Re-exports that feature's page as its public surface          | Component/hook/state imports from other features |
+| `features/index.ts`   | Aggregate of the five feature pages                           | The router's lazy imports                        |
+| `features/*/`         | One feature per folder: container + presentational components | Imports from other features                      |
+| `hooks/`              | Shared React Query hooks, form helpers                        | Feature-specific hooks (stay in `features/`)     |
+| `types/`              | Shared domain interfaces and type aliases                     | Runtime logic, Zod schemas                       |
 
 ---
 
@@ -126,7 +148,7 @@ Each feature page is composed of two layers:
 - The `*Page.tsx` file (e.g. `ServiceListPage.tsx`) is the container.
 - It calls the React Query hook (e.g. `useQuery` with the service-list query).
 - It reads `isLoading`, `isError`, `error`, and `data` from the hook.
-- It renders the correct presentational component based on the state: `<ServiceListLoading />`, `<ServiceListError />`, `<ServiceListEmpty />`, or `<ServiceList data={services} />`.
+- It renders the correct presentational component based on the state: `<ServiceListPageSkeleton />`, `<ServiceListError />`, `<ServiceListEmpty />`, or `<ServiceList data={services} />`. Page skeletons are shared via `components/page-skeletons.tsx` so the Suspense fallback and the feature data-loading state render the same skeleton.
 - It owns URL param extraction (`useParams`, `useSearchParams`).
 - It owns navigation callbacks (`useNavigate`).
 - It never renders raw HTML or styling. All visual output is delegated to presentational components.
@@ -144,7 +166,6 @@ Each feature page is composed of two layers:
 ```
 features/service-list/
 ├── ServiceListPage.tsx        # Container, owns query, renders presentational
-├── ServiceListLoading.tsx     # Skeleton / spinner
 ├── ServiceListError.tsx       # Error card with retry
 ├── ServiceListEmpty.tsx       # Empty state
 └── ServiceCard.tsx            # Presentational, receives Service props
@@ -185,15 +206,17 @@ The client exports typed functions that wrap `fetch` and add Zod validation:
 
 ```ts
 // Conceptual shape, not actual implementation
-export async function getServices(params?: ServiceListParams): Promise<Service[]> {
-  const response = await fetch(buildUrl('/api/v1/services', params));
-  const json = await response.json();
+export async function getServices(
+  params?: ServiceListParams,
+): Promise<Service[]> {
+  const response = await fetch(buildUrl('/api/v1/services', params))
+  const json = await response.json()
 
   if (!response.ok) {
-    throw normalizeError(json, response.status);
+    throw normalizeError(json, response.status)
   }
 
-  return z.array(ServiceSchema).parse(json);  // throws ZodError on shape mismatch
+  return z.array(ServiceSchema).parse(json) // throws ZodError on shape mismatch
 }
 ```
 
@@ -230,17 +253,18 @@ React Query hooks in `hooks/` or co-located in `features/*/` call these service 
 
 ### What goes where
 
-| Concern | Tool | Why |
-|---------|------|-----|
-| **Server state** (services, availability, bookings) | TanStack Query (`useQuery`, `useMutation`) | Automatic caching, deduplication, background refetch, optimistic updates, retry. No manual cache invalidation code. |
-| **Form state** (booking form fields, validation) | React Hook Form + Zod resolver (`@hookform/resolvers`) | Declarative validation, minimal re-renders, integrates directly with Zod schemas from `api/client/schemas.ts`. |
-| **Local UI state** (modals, toggles, input focus) | `useState` / `useReducer` in the component that owns it | Simple, colocated, no prop-drilling overhead. |
-| **URL state** (selected service, filter, booking confirmation) | React Router (`useParams`, `useSearchParams`, `navigate`) | Shareable, bookmarkable, back-button friendly. |
-| **Global store** | None | No global client state is needed. Server state is managed by React Query's cache. Form state is scoped to the form. There is no cross-cutting client state that warrants a Redux/Zustand store. |
+| Concern                                                        | Tool                                                      | Why                                                                                                                                                                                             |
+| -------------------------------------------------------------- | --------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Server state** (services, availability, bookings)            | TanStack Query (`useQuery`, `useMutation`)                | Automatic caching, deduplication, background refetch, optimistic updates, retry. No manual cache invalidation code.                                                                             |
+| **Form state** (booking form fields, validation)               | React Hook Form + Zod resolver (`@hookform/resolvers`)    | Declarative validation, minimal re-renders, integrates directly with Zod schemas from `api/client/schemas.ts`.                                                                                  |
+| **Local UI state** (modals, toggles, input focus)              | `useState` / `useReducer` in the component that owns it   | Simple, colocated, no prop-drilling overhead.                                                                                                                                                   |
+| **URL state** (selected service, filter, booking confirmation) | React Router (`useParams`, `useSearchParams`, `navigate`) | Shareable, bookmarkable, back-button friendly.                                                                                                                                                  |
+| **Global store**                                               | None                                                      | No global client state is needed. Server state is managed by React Query's cache. Form state is scoped to the form. There is no cross-cutting client state that warrants a Redux/Zustand store. |
 
 ### Why no global store
 
 Every piece of state in this app is either:
+
 - **Server-derived**: React Query owns it.
 - **Form-scoped**: React Hook Form owns it.
 - **URL-derived**: React Router owns it.
@@ -254,14 +278,14 @@ There is no state that needs to be shared across unrelated components without go
 
 ### Error taxonomy
 
-| Category | Source | HTTP codes | Client handling |
-|----------|--------|------------|----------------|
-| **Validation error** | Request body/params fail server validation | `400` | Surface field-level errors from `error.details` in the form UI. |
-| **Not found** | Resource doesn't exist | `404` | Show a "not found" message. For services, link back to the list. |
-| **Conflict** | Slot already booked or duplicate booking | `409` | Show a toast with the `error.message`. Prompt user to retry with different input. |
-| **Server error** | Unexpected backend failure | `500` | Show an error card with a "Retry" button. Use React Query's exponential backoff. |
-| **Schema mismatch** | Mock data or API response doesn't match Zod schema | N/A (thrown by `z.parse()`) | Caught in development only. Surfaces as an `ErrorBoundary` crash or console error, and signals a contract drift bug. |
-| **Render error** | Unhandled exception in a component | N/A | Caught by the top-level `ErrorBoundary`. |
+| Category             | Source                                             | HTTP codes                  | Client handling                                                                                                      |
+| -------------------- | -------------------------------------------------- | --------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| **Validation error** | Request body/params fail server validation         | `400`                       | Surface field-level errors from `error.details` in the form UI.                                                      |
+| **Not found**        | Resource doesn't exist                             | `404`                       | Show a "not found" message. For services, link back to the list.                                                     |
+| **Conflict**         | Slot already booked or duplicate booking           | `409`                       | Show a toast with the `error.message`. Prompt user to retry with different input.                                    |
+| **Server error**     | Unexpected backend failure                         | `500`                       | Show an error card with a "Retry" button. Use React Query's exponential backoff.                                     |
+| **Schema mismatch**  | Mock data or API response doesn't match Zod schema | N/A (thrown by `z.parse()`) | Caught in development only. Surfaces as an `ErrorBoundary` crash or console error, and signals a contract drift bug. |
+| **Render error**     | Unhandled exception in a component                 | N/A                         | Caught by the top-level `ErrorBoundary`.                                                                             |
 
 ### The error flow
 
@@ -302,6 +326,7 @@ Container reads `isError` and `error`
 The class-based `ErrorBoundary` in `src/components/ErrorBoundary.tsx` wraps the entire router. It catches **render-time exceptions**, which are errors that occur during React's rendering phase and cannot be caught by React Query or try/catch.
 
 It is **not** a substitute for per-feature error handling. Every feature must handle its own loading/error/empty states explicitly. The ErrorBoundary exists only for:
+
 - Unexpected bugs in component code (e.g. accessing `undefined.foo`).
 - Errors thrown by Chakra or other libraries during render.
 
@@ -325,19 +350,19 @@ function ServiceListPage() {
     queryFn: getServices,
   });
 
-  if (isLoading)       return <ServiceListLoading />;
+  if (isLoading)       return <ServiceListPageSkeleton />;
   if (isError)         return <ServiceListError error={error} />;
   if (data.length === 0) return <ServiceListEmpty />;
   return <ServiceList services={data} />;
 }
 ```
 
-| State | React Query flag | Container renders | Presentational component |
-|-------|------------------|-------------------|--------------------------|
-| **Loading** | `isLoading === true` | `<FeatureLoading />` | Chakra `Skeleton` or `Spinner` |
-| **Error** | `isError === true` | `<FeatureError error={error} />` | `Alert` with error message + retry button |
-| **Empty** | `data.length === 0` (arrays) or `data === null` (singles) | `<FeatureEmpty />` | Illustration + helper text |
-| **Success** | `isSuccess === true && data.length > 0` | `<Feature data={data} />` | The actual content (cards, forms, tables) |
+| State       | React Query flag                                          | Container renders                | Presentational component                  |
+| ----------- | --------------------------------------------------------- | -------------------------------- | ----------------------------------------- |
+| **Loading** | `isLoading === true`                                      | `<FeatureLoading />`             | Chakra `Skeleton` or `Spinner`            |
+| **Error**   | `isError === true`                                        | `<FeatureError error={error} />` | `Alert` with error message + retry button |
+| **Empty**   | `data.length === 0` (arrays) or `data === null` (singles) | `<FeatureEmpty />`               | Illustration + helper text                |
+| **Success** | `isSuccess === true && data.length > 0`                   | `<Feature data={data} />`        | The actual content (cards, forms, tables) |
 
 ### Why this pattern
 
@@ -349,12 +374,12 @@ function ServiceListPage() {
 
 The booking form uses `useMutation` which provides its own status flags:
 
-| State | Flag | UI behaviour |
-|-------|------|--------------|
-| **Idle** | `isPending === false && !submitted` | Form is editable, submit button enabled |
-| **Submitting** | `isPending === true` | Submit button disabled, skeleton shown |
-| **Success** | `isSuccess === true` | Navigate to `/confirmation?bookingId={id}` |
-| **Error** | `isError === true` | Surface error below the form, re-enable submit |
+| State          | Flag                                | UI behaviour                                   |
+| -------------- | ----------------------------------- | ---------------------------------------------- |
+| **Idle**       | `isPending === false && !submitted` | Form is editable, submit button enabled        |
+| **Submitting** | `isPending === true`                | Submit button disabled, skeleton shown         |
+| **Success**    | `isSuccess === true`                | Navigate to `/confirmation?bookingId={id}`     |
+| **Error**      | `isError === true`                  | Surface error below the form, re-enable submit |
 
 ---
 
@@ -365,7 +390,9 @@ The booking form uses `useMutation` which provides its own status flags:
 Every feature page is wrapped with `React.lazy()` in `App.tsx`:
 
 ```ts
-const ServiceListPage = lazy(() => import('@/features/service-list/ServiceListPage'))
+const ServiceListPage = lazy(
+  () => import('@/features/service-list/ServiceListPage'),
+)
 ```
 
 This means each feature is a separate JavaScript chunk. The initial bundle contains only the router, providers, and the landing page (service list). Other features load on demand when the user navigates to them.
@@ -381,9 +408,10 @@ This means each feature is a separate JavaScript chunk. The initial bundle conta
 A single `<Suspense>` boundary in `App.tsx` covers all lazy routes. While a chunk loads, the user sees a centered `Spinner` at full viewport height (`minH="60vh"`).
 
 **Behaviour:**
+
 - First visit to a route shows a brief spinner (typically under 200ms on a warm cache, 0.5-2s on a cold one).
 - Subsequent visits → instant (chunk is cached by Vite/bundler).
-- No skeleton shimmer during code-split loading. Only a spinner appears. This is intentional: the spinner represents *code loading*, not *data loading*. Data loading has its own skeleton inside the feature's `isLoading` state.
+- No skeleton shimmer during code-split loading. Only a spinner appears. This is intentional: the spinner represents _code loading_, not _data loading_. Data loading has its own skeleton inside the feature's `isLoading` state.
 
 ### What is NOT lazy-loaded
 

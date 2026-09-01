@@ -1,20 +1,31 @@
 import { lazy, Suspense } from 'react'
 import { Routes, Route } from 'react-router-dom'
-import { ErrorBoundary } from '@/components/ErrorBoundary'
-import { DevErrorSimulator } from '@/components/DevErrorSimulator'
-import { PageSkeleton } from '@/components/PageSkeleton'
+import {
+  ErrorBoundary,
+  DevErrorSimulator,
+  RoutePageSkeleton,
+} from '@/components'
 
-const ServiceListPage = lazy(() => import('@/features/service-list/ServiceListPage'))
-const ServiceDetailsPage = lazy(() => import('@/features/service-details/ServiceDetailsPage'))
+const ServiceListPage = lazy(
+  () => import('@/features/service-list/ServiceListPage'),
+)
+const ServiceDetailsPage = lazy(
+  () => import('@/features/service-details/ServiceDetailsPage'),
+)
 const BookingPage = lazy(() => import('@/features/booking/BookingPage'))
-const ConfirmationPage = lazy(() => import('@/features/confirmation/ConfirmationPage'))
-const MyBookingsPage = lazy(() => import('@/features/my-bookings/MyBookingsPage'))
+const ConfirmationPage = lazy(
+  () => import('@/features/confirmation/ConfirmationPage'),
+)
+const MyBookingsPage = lazy(
+  () => import('@/features/my-bookings/MyBookingsPage'),
+)
 
 function RouteFallback() {
-  // This is the code-split (Suspense) loading state — distinct from each
-  // feature's own data-loading skeleton. A labelled, live region ensures the
-  // "code is loading" state is announced rather than a blank flash.
-  return <PageSkeleton />
+  // This is the code-split (Suspense) loading state. It maps the current route
+  // to the skeleton of the page about to render, so the user sees a single
+  // page-matched skeleton both here and in the feature's own data-loading
+  // state, never two different skeletons in sequence.
+  return <RoutePageSkeleton />
 }
 
 /**
