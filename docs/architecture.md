@@ -39,14 +39,15 @@ Every feature follows a strict dependency direction. Each layer imports only fro
 ```
 src/
 ├── api/
-│   ├── index.ts              # Public barrel, re-exports service functions
+│   ├── index.ts              # Public barrel, re-exports service functions + test utils
+│   ├── userMessage.ts        # userFacingMessage() + logApiError() helpers
 │   ├── client/
 │   │   ├── index.ts          # HTTP client: fetch + Zod validation + mock toggle
 │   │   └── schemas.ts        # Zod schemas (runtime source of truth)
 │   ├── mock/
-│   │   └── index.ts          # In-memory mock handlers (VITE_USE_MOCK_API=true)
+│   │   └── index.ts          # In-memory mock handlers + setForceError/resetDb
 │   └── services/
-│       └── index.ts          # Feature-specific API functions
+│       └── index.ts          # Feature-specific API functions + BookingRequestSchema
 │
 ├── components/
 │   ├── index.ts              # Barrel: shared, feature-agnostic components
@@ -60,28 +61,51 @@ src/
 │   ├── index.ts              # Aggregate barrel of the five feature pages
 │   ├── service-list/
 │   │   ├── index.ts          # Re-exports ServiceListPage
-│   │   └── ServiceListPage.tsx       # Container + presentational (per feature)
+│   │   ├── ServiceListPage.tsx        # Container
+│   │   ├── useServices.ts             # React Query hook + client-side filter/search
+│   │   ├── ServiceCard.tsx / ServiceListGrid.tsx / SearchBar.tsx /
+│   │   │   CategoryFilter.tsx / ServiceListError.tsx / ServiceListEmpty.tsx
+│   │   └── ServiceListPage.test.tsx
 │   ├── service-details/
-│   │   ├── index.ts          # Re-exports ServiceDetailsPage
-│   │   └── ServiceDetailsPage.tsx
+│   │   ├── index.ts
+│   │   ├── ServiceDetailsPage.tsx     # Container
+│   │   ├── useServiceDetails.ts       # React Query hook
+│   │   ├── ServiceDetailsContent.tsx / ServiceDetailsError.tsx
+│   │   └── ServiceDetailsPage.test.tsx
 │   ├── booking/
-│   │   ├── index.ts          # Re-exports BookingPage
-│   │   └── BookingPage.tsx
+│   │   ├── index.ts
+│   │   ├── BookingPage.tsx            # Container
+│   │   ├── bookingFlow.ts             # Reducer/state machine
+│   │   ├── customerDetailsSchema.ts   # Zod form rules from BookingRequestSchema
+│   │   ├── useAvailability.ts / useCreateBooking.ts
+│   │   ├── BookingDateStep / BookingSlotStep / BookingSlotStepLoading /
+│   │   │   CustomerDetailsForm / BookingSummary / BookingStepper /
+│   │   │   BookingError / BookingLoading
+│   │   └── BookingPage.test.tsx / BookingFlow.test.tsx
 │   ├── confirmation/
-│   │   ├── index.ts          # Re-exports ConfirmationPage
-│   │   └── ConfirmationPage.tsx
+│   │   ├── index.ts
+│   │   ├── ConfirmationPage.tsx       # Container
+│   │   ├── ConfirmationCard.tsx
+│   │   └── ConfirmationPage.test.tsx
 │   └── my-bookings/
-│       ├── index.ts          # Re-exports MyBookingsPage
-│       └── MyBookingsPage.tsx
+│       ├── index.ts
+│       ├── MyBookingsPage.tsx         # Container
+│       ├── useBookings.ts             # React Query hook
+│       ├── MyBookingsEmailPrompt.tsx / BookingsList.tsx / BookingsListLoading.tsx /
+│       │   BookingDetails.tsx / BookingDetailsLoading.tsx
+│       └── MyBookingsPage.test.tsx
 │
 ├── hooks/
-│   └── index.ts              # Shared hooks (React Query wrappers, form helpers)
+│   ├── index.ts              # Barrel
+│   ├── useDebouncedValue.ts  # Debounces a value (e.g. search input)
+│   └── useFocusOnMount.ts    # Focuses a ref on mount (e.g. error banners)
 │
 ├── types/
 │   └── index.ts              # Shared TypeScript domain types
 │
 ├── test/
-│   └── setup.ts              # Vitest setup (jest-dom matchers)
+│   ├── setup.ts              # Vitest setup (jest-dom matchers)
+│   └── fixtures.ts           # Schema-valid test fixtures
 │
 ├── App.tsx                   # Router, Suspense, ErrorBoundary
 └── main.tsx                  # Providers: Chakra, React Query, BrowserRouter
@@ -110,7 +134,7 @@ cross-feature routing already reaches via URL navigation.
 | `features/*/index.ts` | Re-exports that feature's page as its public surface          | Component/hook/state imports from other features |
 | `features/index.ts`   | Aggregate of the five feature pages                           | The router's lazy imports                        |
 | `features/*/`         | One feature per folder: container + presentational components | Imports from other features                      |
-| `hooks/`              | Shared React Query hooks, form helpers                        | Feature-specific hooks (stay in `features/`)     |
+| `hooks/`              | Shared, feature-agnostic hooks (debounce, focus)              | Feature-specific hooks (stay in `features/`)     |
 | `types/`              | Shared domain interfaces and type aliases                     | Runtime logic, Zod schemas                       |
 
 ---
@@ -242,7 +266,7 @@ getServiceDetails(id)   → GET /api/v1/services/{id}
 getServiceAvailability(id, params) → GET /api/v1/services/{id}/availability
 createBooking(data)     → POST /api/v1/bookings
 getBookings(email)      → GET /api/v1/bookings
-getBookingDetails(id)   → GET /api/v1/bookings/{id}
+getBookingById(id)      → GET /api/v1/bookings/{id}
 ```
 
 React Query hooks in `hooks/` or co-located in `features/*/` call these service functions inside their `queryFn` or `mutationFn`.
